@@ -68,12 +68,12 @@ if __name__ == '__main__':
     # TODO: Replace this by a factory
     reader = RasterReader(args.reader)
 
-    # 3. Load Processing Class
+    # 2. Load Processing Class
     # TODO: Replace this by a factory
     if args.processing == 'load':
         process_cls = LoadRaster(reader)
     else:
         raise(Exception('Unknown process: {}'.format(args.processing)))
 
-    # 4. Execute process
+    # 3. Execute process
     process_cls.run()

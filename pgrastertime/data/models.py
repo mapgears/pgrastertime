@@ -11,6 +11,7 @@ class PGRasterTime(Base):
     raster = sa.Column(geoalchemy2.types.Raster, nullable=False)
     resolution = sa.Column(sa.Float, nullable=False)
     filename = sa.Column(sa.UnicodeText, nullable=True)
+    sys_period = sa.Column(sa.dialects.postgresql.TSTZRANGE, nullable=False)
 
 
 class SpatialRefSys(Base):

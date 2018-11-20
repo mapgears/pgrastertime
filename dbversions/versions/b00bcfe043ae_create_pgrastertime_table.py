@@ -7,6 +7,7 @@ Create Date: 2018-11-16 13:26:05.652461
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 import geoalchemy2
 
 
@@ -26,6 +27,7 @@ def upgrade():
         sa.Column('raster', geoalchemy2.types.Raster(), nullable=False),
         sa.Column('resolution', sa.Float(), nullable=False),
         sa.Column('filename', sa.UnicodeText(), nullable=True),
+        sa.Column('sys_period', postgresql.TSTZRANGE(), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

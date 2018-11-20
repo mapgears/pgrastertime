@@ -29,6 +29,11 @@ class RasterReader(Reader):
     def __del__(self):
         rmtree(self.destination)
 
+    @property
+    def id(self):
+        # TODO
+        return 1
+
     def get_file(self, resolution=None):
         if not resolution or self.resolution == resolution:
             return copy(self.filename, self.destination)
@@ -36,7 +41,7 @@ class RasterReader(Reader):
         if self.resolution > float(resolution):
             return None
 
-        filename = '{}.{}'.format(resolution, self.extension)
+        filename = '{}{}'.format(resolution, self.extension)
         fullpath = os.path.join(self.destination, filename)
         opt = gdal.TranslateOptions(
             resampleAlg='bilinear',

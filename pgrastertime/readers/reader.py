@@ -13,5 +13,9 @@ class Reader:
         self.date = date
         self.resolution = resolution
 
+    @property
+    def id(self):
+        raise(Exception('Not implemented'))
+
     def get_file(self, resolution=None):
         raise(Exception('Not implemented'))
