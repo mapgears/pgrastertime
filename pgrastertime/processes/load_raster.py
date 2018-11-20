@@ -31,7 +31,7 @@ class LoadRaster(Process):
             sql = sql.replace(
                 '("raster") VALUES (',
                 '("tile_id", "resolution", "sys_period", "raster") '
-                'VALUES ({}, {}, tstzrange(\'{}\', NULL)'.format(
+                'VALUES ({}, {}, tstzrange(\'{}\', NULL), '.format(
                     self.reader.id, resolution, self.reader.date
                 )
             )
