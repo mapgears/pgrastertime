@@ -6,6 +6,7 @@ name = "pypi"
 [dev-packages]
 "autopep8" = "*"
 "flake8" = "*"
+pycodestyle = "*"
 
 [packages]
 numpy = "*"

@@ -18,6 +18,11 @@ cp development.ini local.ini
 ```
 Edit the local.ini to fit your installation
 
+## Update dependencies
+```
+pipenv sync
+```
+
 ## GDAL:
 Require GDAL >= 2.1
 ```
@@ -43,5 +48,5 @@ alembic -c local.ini upgrade head
 # Running the script
 ```
 pipenv shell
-python pgrastertime.py local.ini file.tif load
+pgrastertime -c local.ini file.tif load
 ```
