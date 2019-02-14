@@ -10,6 +10,7 @@ import sys
 from pgrastertime import init_config
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
+from pgrastertime.processes import XMLRastersObject
 
 root = os.path.dirname(os.path.dirname(__file__))
 
@@ -72,17 +73,32 @@ def main():
 
     init_config(args.config_file)
 
-    # 1. Load file with reader options
-    # TODO: Replace this by a factory
-    reader = RasterReader(args.reader)
-
-    # 2. Load Processing Class
+    # 1. Load Processing Class
     # TODO: Replace this by a factory
     if args.processing == 'load':
+    
+        # 2. Load file with reader options
+        # TODO: Replace this by a factory
+        reader = RasterReader(args.reader)
         process_cls = LoadRaster(reader)
+        # 3. Execute process
+        # TODO: Handle dry run, force overwrite and reset-data
+        process_cls.run()
+        
+    elif args.processing == 'xml':
+    
+        # all XML object refer to 4 raster files that we 
+        # need to load in database.  If it's a directory;
+        if os.path.isdir(args.reader):    
+            for file in os.listdir(args.reader):
+                if (os.path.splitext(file)[-1].lower()== '.xml'):
+                    XMLRastersObject(os.path.join(args.reader, file)).importRasters()
+            
+
+        elif os.path.isfile(args.reader):
+            # user specify a file instead of a folder to process
+            # Import all raster files link to the XML object
+            XMLRastersObject(args.reader).importRasters()
+            
     else:
         raise(Exception('Unknown process: {}'.format(args.processing)))
-
-    # 3. Execute process
-    # TODO: Handle dry run, force overwrite and reset-data
-    process_cls.run()
