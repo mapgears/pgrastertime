@@ -4,7 +4,6 @@ cat $1 >> ins.sql
 echo "\$\$  AS objectXml;" >> ins.sql
 sed -i '3d' ins.sql
 echo "INSERT INTO metadata 
---create table metadata as 
   SELECT xmltable.*
   FROM metadatatemp,
   XMLTABLE ('//BDB_Simple_Attributes' PASSING objectXml
@@ -49,8 +48,3 @@ INSERT INTO xml_tmp(objnam)
         COLUMNS
 	  OBJNAM text PATH  'Attribute[@name = \"OBJNAM\"]/Value' );
 ">>ins.sql
-	  	
-
-
-psql pgrastertime -U loader -f ins.sql 
-rm ins.sql

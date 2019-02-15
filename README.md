@@ -50,3 +50,31 @@ alembic -c local.ini upgrade head
 pipenv shell
 pgrastertime -c local.ini file.tif load
 ```
+
+# Test data
+
+
+First iteration of pgRastertime is design to import your raster data in a "container" database.  You need to edit your local.ini file to change your postgresql connection info. 
+
+```
+pipenv run python pgrastertime.py -t pgrastertime ./datatest xml
+```
+
+You can import a files link to a specific XML object file
+
+```
+pipenv run python pgrastertime.py -t pgrastertime ./datatest/18g153129011_0250_0250.object.xml xml
+```
+
+# Todo list
+
+ * Add createdb script to add in target database all table needed for XML import type
+ * Add more validations to report invalide/missing raster or fail process on XML object 
+ * Add create table option if table didn't exist
+ * The option -t is not realy useful right now.  Add [overwrite, append] option on target table 
+ * Add custum post SQL process on imported raster (-p --process script1.sql,scrip2.sql)
+ * Include xml.sh process through SQLAlchemy
+
+
+
+

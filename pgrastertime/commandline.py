@@ -38,6 +38,10 @@ def parse_arguments():
         help='Processing option',
     )
     parser.add_argument(
+        '--tablename', '-t',
+        help="Target raster table name in Postgresql"
+    )
+    parser.add_argument(
         '--verbose', '-v',
         action='count', default=0,
         help="Verbose"
@@ -70,8 +74,9 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
-
+     
     init_config(args.config_file)
+
 
     # 1. Load Processing Class
     # TODO: Replace this by a factory
@@ -79,7 +84,8 @@ def main():
     
         # 2. Load file with reader options
         # TODO: Replace this by a factory
-        reader = RasterReader(args.reader)
+        reader = RasterReader(args.reader,args.tablename)
+        
         process_cls = LoadRaster(reader)
         # 3. Execute process
         # TODO: Handle dry run, force overwrite and reset-data
@@ -92,13 +98,13 @@ def main():
         if os.path.isdir(args.reader):    
             for file in os.listdir(args.reader):
                 if (os.path.splitext(file)[-1].lower()== '.xml'):
-                    XMLRastersObject(os.path.join(args.reader, file)).importRasters()
+                    XMLRastersObject(os.path.join(args.reader, file),args.tablename).importRasters()
             
 
         elif os.path.isfile(args.reader):
             # user specify a file instead of a folder to process
             # Import all raster files link to the XML object
-            XMLRastersObject(args.reader).importRasters()
+            XMLRastersObject(args.reader,args.tablename).importRasters()
             
     else:
         raise(Exception('Unknown process: {}'.format(args.processing)))

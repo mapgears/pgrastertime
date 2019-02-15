@@ -15,7 +15,7 @@ class RasterReader(Reader):
 
     filename = None
 
-    def __init__(self, filename):
+    def __init__(self, filename,tablename):
         self.filename = os.path.basename(filename)
         self.dirname = os.path.dirname(filename)
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
@@ -23,6 +23,7 @@ class RasterReader(Reader):
         self.extension = os.path.splitext(filename)[1]
         self.destination = tempfile.mkdtemp()
         self.date = datetime.now()
+        self.tablename = tablename
 
     def __del__(self):
         rmtree(self.destination)
