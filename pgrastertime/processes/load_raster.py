@@ -24,6 +24,15 @@ class LoadRaster(Process):
             if not filename:
                 continue
             
+            # if force, we will drop et rebuilt table
+            if self.reader.force:
+                DBSession().execute("DROP TABLE IF EXISTS " + self.reader.tablename)
+                pgrast_table = self.reader.getPgrastertimeTableStructure(self.reader.tablename)
+                print(pgrast_table)
+                rs = DBSession().execute(pgrast_table)
+                print (rs)
+                exit()
+            
             #NOTE: sqlalchemy didn't work with large file.  Using system cmd workaround work fine
             cmd =  "raster2pgsql -Y -a -f raster -t 100x100 -n filename " + filename +" " + self.reader.tablename + " > " +filename+".sql"           
             if subprocess.call(cmd, shell=True) == 0:

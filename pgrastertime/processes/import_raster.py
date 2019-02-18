@@ -10,9 +10,10 @@ import sys, os
 
 class XMLRastersObject:
 
-    def __init__(self, xml_filename,tablename):
+    def __init__(self, xml_filename,tablename,force):
         self.xml_filename = xml_filename
         self.tablename = tablename
+        self.force = force
 
     def insertXML(self, xml_filename):
     
@@ -59,13 +60,13 @@ class XMLRastersObject:
                 return False
         
             ## Import all those raster in database
-            reader = RasterReader(raster_prefix + '_depth.tiff',self.tablename)
+            reader = RasterReader(raster_prefix + '_depth.tiff',self.tablename,self.force)
             LoadRaster(reader).run()
-            reader = RasterReader(raster_prefix + '_mean.tiff',self.tablename)
+            reader = RasterReader(raster_prefix + '_mean.tiff',self.tablename,self.force)
             LoadRaster(reader).run()
-            reader = RasterReader(raster_prefix + '_stddev.tiff',self.tablename)
+            reader = RasterReader(raster_prefix + '_stddev.tiff',self.tablename,self.force)
             LoadRaster(reader).run()
-            reader = RasterReader(raster_prefix + '_density.tiff',self.tablename)
+            reader = RasterReader(raster_prefix + '_density.tiff',self.tablename,self.force)
             LoadRaster(reader).run()
 
             return True

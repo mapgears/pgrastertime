@@ -5,9 +5,10 @@ from shutil import (
     copy,
     rmtree
 )
-import tempfile
+import tempfile,sys
 from .reader import Reader
 from osgeo import gdal
+from pgrastertime import CONFIG
 from datetime import datetime, timedelta
 
 
@@ -15,7 +16,7 @@ class RasterReader(Reader):
 
     filename = None
 
-    def __init__(self, filename,tablename):
+    def __init__(self, filename,tablename,force):
         self.filename = os.path.basename(filename)
         self.dirname = os.path.dirname(filename)
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
@@ -24,6 +25,7 @@ class RasterReader(Reader):
         self.destination = tempfile.mkdtemp()
         self.date = datetime.now()
         self.tablename = tablename
+        self.force = force
 
     def __del__(self):
         rmtree(self.destination)
@@ -32,6 +34,14 @@ class RasterReader(Reader):
     def id(self):
         # TODO
         return 1
+
+    def getPgrastertimeTableStructure(self,target_name):
+        # strucure table can be customized by user and are stored in ./sql folder
+        pgrast_table = CONFIG['app:main'].get('db.pgrastertable') 
+        pgrast_file = os.path.dirname(os.path.realpath(sys.argv[0])) + pgrast_table
+        with open(pgrast_file) as f:
+            pgrast_sql = f.readlines()
+            return (''.join(pgrast_sql)).replace('pgrastertime',target_name)
 
     def get_file(self, resolution=None):
         

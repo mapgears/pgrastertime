@@ -29,12 +29,12 @@ def parse_arguments():
         help='.ini configuration file', metavar='config_file',
     )
     parser.add_argument(
-        '--tablename', '-t',action='store_true',
+        '--tablename', '-t',default='',
         help="Target raster table name in Postgresql"
     )
     parser.add_argument(
-        '--sqlfiles', '-s',action='store_true',
-        help="Custome post process SQL files separeted by comas"
+        '--sqlfiles', '-s', default='', 
+        help="Custom post process SQL files separeted by commas"
     )
     parser.add_argument(
         'reader',
@@ -79,12 +79,6 @@ def main():
     args = parse_arguments()
      
     init_config(args.config_file)
-
-    print ("processing:" + args.processing)
-    print ("reader:" + args.reader)
-    print ("sqlfiles:" + args.sqlfiles)
-    print ("tablename:" + args.tablename)
-    exit()
     
     # 1. Load Processing Class
     # TODO: Replace this by a factory
@@ -92,7 +86,7 @@ def main():
     
         # 2. Load file with reader options
         # TODO: Replace this by a factory
-        reader = RasterReader(args.reader,args.tablename)
+        reader = RasterReader(args.reader,args.tablename,args.force)
         
         process_cls = LoadRaster(reader)
         # 3. Execute process
@@ -112,14 +106,12 @@ def main():
         elif os.path.isfile(args.reader):
             # user specify a file instead of a folder to process
             # Import all raster files link to the XML object
-            XMLRastersObject(args.reader,args.tablename).importRasters()
+            XMLRastersObject(args.reader,args.tablename,args.force).importRasters()
             
         # Finaly, user create some post process SQL to run over loaded table        
-       if args.sqlfiles is not None:
-           print("sql") 
+        if args.sqlfiles is not None:
+           PostprocSQL(args.sqlfiles,args.tablename).execute()
            # User can have multiple SQL file to run
-        
-         
-       
+           
     else:
         raise(Exception('Unknown process: {}'.format(args.processing)))

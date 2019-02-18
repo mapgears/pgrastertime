@@ -13,10 +13,7 @@ will be used to query raster value at a specific time for analysis.
 ```
 sudo apt install python3 pip
 pip install --user pipenv
-pipenv install requests
-pip install psycopg2-binary
-pip install gdal
-pip install --global-option=build_ext --global-option="-I/usr/include/gdal" GDAL==`gdal-config --version`
+pipenv install
 cp development.ini local.ini
 ```
 Edit the local.ini to fit your installation

@@ -6,21 +6,27 @@ from pgrastertime.processes import LoadRaster
 from pgrastertime.data.sqla import DBSession
 from pgrastertime import CONFIG
 import subprocess
-import sys, os
+import sys, os, re
 
 class PostprocSQL:
 
-    def __init__(self, sqlfiles):
+    def __init__(self, sqlfiles,tablename):
         self.sqlfiles = sqlfiles
+        self.tablename = tablename
     
     def removedCommentedline(self,sql):
         # removed comment line in SQL file
         cleanStr = ''
-        for line in sql:
-           if line.lstrip().startswith('--'):
-              cleanStr = cleanStr + line
         
-        return cleanStr
+        for line in sql:
+           ##print('line:'+line)
+           if not line.strip().startswith('--'):
+              cleanStr = cleanStr + ' ' + line.strip()
+        
+        # remove all occurance streamed comments (/*COMMENT */) from string
+        string = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,cleanStr) 
+             
+        return string
     
     def exec_sql(self,sql):
         # TODO: should maybe use SQLAlchemy
@@ -34,36 +40,23 @@ class PostprocSQL:
         if subprocess.call(cmd, shell=True) != 0:
             print("Fail to run sql;" + sql)  
 
+    def execute(self):
+        # for SQL files separated by ','
+        sfile_a = self.sqlfiles.split(",")
+        for file_ in sfile_a:
+            with open(file_) as f:
+               
+                # transfert file in array to process each SQL command line
+                sqlfile = f.readlines()
+                   
+                # we will need to removed all comment line (started by '--') in SQL file
+                # then we split each SQL command with ';'
+                # sqlcmds = self.removedCommentedline(sqlfile).split(";")
+                   
+                sqlcmds = self.removedCommentedline(sqlfile).split(";")
 
-    def execute(self, sqlfiles,tablename):
-    
-        # TODO: should use SQLAlchemy
-        resolutions = CONFIG['app:main'].get('output.resolutions').split(',') 
-        
-        # for each resolution table run SQL process
-        # In each SQL file, the template name "pgrastertime" table will be replace by the 
-        # target table name for each resolution.  ex: souncings_25cm, soundings_50cm, etc...
-        for resolution in resolutions:
-           
-           #build target table name
-           if resolution < 1:
-               target_table = tablename + "_" + str(resolution) + "cm"
-           else:
-               target_table = tablename + "_" + str(resolution) + "m"
-           
-           # for each SQL ended by ';'
-           sfile_a = sqlfiles.split(",")
-           for file_ in sfile_a:
-               with open(file_) as f:
-                   lines = f.readlines()
-                   if not line.lstrip().startswith('--'):
-                       # for each SQL command ended by ';' in file
-                       sqlcmd = lines.split(";")
-                       for sqltmplate in sqlcmd:
-
-                           # replace template table by target resolution table
-                           sql = sqltmplate.replace("pgrastertime", target_table)
-                           print(sql)
-                           self.exec_sql(sql)
-                           
-      
+                for cmd in sqlcmds:
+                    # for each SQL command ended by ';' in file
+                    sql = cmd.replace("pgrastertime", target_table)
+                    print(cmd)
+                    ##DBSession().execute(sql)
