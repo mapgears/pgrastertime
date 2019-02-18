@@ -16,6 +16,8 @@ sqlalchemy = "*"
 alembic = "*"
 pgrastertime = {path = ".",editable = true}
 "psycopg2" = "*"
+requests = "*"
+gdal = "*"
 
 [requires]
 python_version = "3.5"

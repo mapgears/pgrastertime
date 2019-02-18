@@ -11,6 +11,7 @@ from pgrastertime import init_config
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
 from pgrastertime.processes import XMLRastersObject
+from pgrastertime.processes import PostprocSQL
 
 root = os.path.dirname(os.path.dirname(__file__))
 
@@ -23,12 +24,18 @@ def parse_arguments():
         nargs='?', help=argparse.SUPPRESS,
         default=os.path.join(root, 'local.ini'),
     )
-
     parser.add_argument(
         '--config_file', '--config', '-c', dest='config_file',
         help='.ini configuration file', metavar='config_file',
     )
-
+    parser.add_argument(
+        '--tablename', '-t',action='store_true',
+        help="Target raster table name in Postgresql"
+    )
+    parser.add_argument(
+        '--sqlfiles', '-s',action='store_true',
+        help="Custome post process SQL files separeted by comas"
+    )
     parser.add_argument(
         'reader',
         help='Reader driver options',
@@ -36,14 +43,6 @@ def parse_arguments():
     parser.add_argument(
         'processing',
         help='Processing option',
-    )
-    parser.add_argument(
-        '--tablename', '-t',
-        help="Target raster table name in Postgresql"
-    )
-    parser.add_argument(
-        '--sql', '-s',
-        help="Custome postprocess SQL"
     )
     parser.add_argument(
         '--verbose', '-v',
@@ -81,7 +80,12 @@ def main():
      
     init_config(args.config_file)
 
-
+    print ("processing:" + args.processing)
+    print ("reader:" + args.reader)
+    print ("sqlfiles:" + args.sqlfiles)
+    print ("tablename:" + args.tablename)
+    exit()
+    
     # 1. Load Processing Class
     # TODO: Replace this by a factory
     if args.processing == 'load':
@@ -109,12 +113,13 @@ def main():
             # user specify a file instead of a folder to process
             # Import all raster files link to the XML object
             XMLRastersObject(args.reader,args.tablename).importRasters()
-    
-    # Finaly, user create some post process SQL to run over loaded table        
-    elif args.sql is not None:
-        print("sql") 
-        # User can have multiple SQL file to run
-        
             
+        # Finaly, user create some post process SQL to run over loaded table        
+       if args.sqlfiles is not None:
+           print("sql") 
+           # User can have multiple SQL file to run
+        
+         
+       
     else:
         raise(Exception('Unknown process: {}'.format(args.processing)))
