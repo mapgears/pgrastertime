@@ -42,6 +42,10 @@ def parse_arguments():
         help="Target raster table name in Postgresql"
     )
     parser.add_argument(
+        '--sql', '-s',
+        help="Custome postprocess SQL"
+    )
+    parser.add_argument(
         '--verbose', '-v',
         action='count', default=0,
         help="Verbose"
@@ -105,6 +109,12 @@ def main():
             # user specify a file instead of a folder to process
             # Import all raster files link to the XML object
             XMLRastersObject(args.reader,args.tablename).importRasters()
+    
+    # Finaly, user create some post process SQL to run over loaded table        
+    elif args.sql is not None:
+        print("sql") 
+        # User can have multiple SQL file to run
+        
             
     else:
         raise(Exception('Unknown process: {}'.format(args.processing)))
