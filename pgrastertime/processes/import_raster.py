@@ -29,7 +29,7 @@ class XMLRastersObject:
            print("Fail to convert xml to sql...")
            return False
         
-        cmd = "PGPASSWORD=" + pg_pw + " psql -U " + pg_user + " -d " + pg_dbname+ " -f ins.sql"
+        cmd = "PGPASSWORD=" + pg_pw + " psql -q -U " + pg_user + " -d " + pg_dbname+ " -f ins.sql"
         if subprocess.call(cmd, shell=True) != 0:
              print("Fail to insert sql in database...")
              return False

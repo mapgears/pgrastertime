@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from datetime import (
     date,
     datetime
@@ -20,7 +21,6 @@ def init_sqla(settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-
 
 class BaseMixin(object):
 

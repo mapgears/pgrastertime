@@ -33,8 +33,7 @@ class PostprocSQL:
         sfile_a = self.sqlfiles.split(",")
         for file_ in sfile_a:
             with open(file_) as f:
-                
-                print("Start post process SQL file: " + file_)
+
                 # transfert file in array to process each SQL command line
                 sqlfile = f.readlines()
                    

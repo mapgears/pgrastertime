@@ -79,9 +79,9 @@ class RasterReader(Reader):
         filename = '{}{}'.format(resolution, self.extension)
         fullpath = os.path.join(self.destination, filename)
         self.resolution=resolution
-        print ("Align pixels and set the destination srs of "+filename)
+        print ("Align pixels on resolution/Reproject with GDAL of " + self.filename)
         gdal.Warp(fullpath, dataset, options=opt)
-
+        print ("Processed successfully!")
         return fullpath
 
 

@@ -11,17 +11,6 @@ class LoadRaster(Process):
 
     def run(self):
         
-        # if force, we will drop et rebuilt table
-        if self.reader.force:
-            pgrast_table = self.reader.getPgrastertimeTableStructure(self.reader.tablename)
-            DBSession().execute("DROP TABLE IF EXISTS " + self.reader.tablename)
-            DBSession().execute(pgrast_table)
-            # We will need also to overwrite the Metadata table
-            DBSession().execute("DROP TABLE IF EXISTS " + self.reader.tablename + "_metadata")
-            metadata_table = self.reader.getMetadataeTableStructure(self.reader.tablename)
-            DBSession().execute(metadata_table)
-            DBSession().commit()
-        
         resolutions = CONFIG['app:main'].get('output.resolutions').split(',')     
         
         for resolution in resolutions:
@@ -42,7 +31,7 @@ class LoadRaster(Process):
                 pg_dbname = CONFIG['app:main'].get('sqlalchemy.url').split('/')[3]
                 pg_pw = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[1]
                 pg_user = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[0]
-                cmd = "PGPASSWORD=" + pg_pw + " psql -p " + pg_port + " -h " + pg_host + \
+                cmd = "PGPASSWORD=" + pg_pw + " psql -q -p " + pg_port + " -h " + pg_host + \
                       " -U " + pg_user + " -d " +  pg_dbname + \
                       " -f " + filename + ".sql"
                 if subprocess.call(cmd, shell=True) == 0:
@@ -57,4 +46,4 @@ class LoadRaster(Process):
                         DBSession().execute(sql)
                         DBSession().commit()                          
                     except:
-                        print("fail to update matadata of tif file")
+                        print("Fail to update matadata of tif file")
