@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## from pgrastertime.data.sqla import DBSession
-## from pgrastertime import CONFIG
+from pgrastertime.data.sqla import DBSession
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
 from pgrastertime import CONFIG
@@ -24,8 +23,8 @@ class XMLRastersObject:
         pg_pw = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[1]
         pg_user = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[0]
         
-        # this bash file create ins.sql to run
-        cmd = "sh ./xml.sh " + xml_filename
+        #this bash file create ins.sql to run
+        cmd = "sh ./xml.sh " + xml_filename + " " + self.tablename 
         if subprocess.call(cmd, shell=True) != 0:
            print("Fail to convert xml to sql...")
            return False
@@ -54,11 +53,6 @@ class XMLRastersObject:
         
             print("All raster finded! Importing rasters of " + self.xml_filename)
         
-            # It's a load Metadata in database
-            if not (self.insertXML(self.xml_filename)):
-                print("Fail to insert XML metadata in database")
-                return False
-        
             ## Import all those raster in database
             reader = RasterReader(raster_prefix + '_depth.tiff',self.tablename,self.force)
             LoadRaster(reader).run()
@@ -68,8 +62,15 @@ class XMLRastersObject:
             LoadRaster(reader).run()
             reader = RasterReader(raster_prefix + '_density.tiff',self.tablename,self.force)
             LoadRaster(reader).run()
-
-            return True
+            
+            # OK we can insert Metadata in database
+            
+            if not (self.insertXML(self.xml_filename)):
+                print("Fail to insert XML metadata in database")
+                return False
+            else:
+                print("Insert XML metadata in metadata table successfully!")
+                return True
         
         else:
             print("ERROR source file missing for " + xml_objfile )

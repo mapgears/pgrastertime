@@ -3,7 +3,7 @@ echo "\$\$ " >> ins.sql
 cat $1 >> ins.sql
 echo "\$\$  AS objectXml;" >> ins.sql
 sed -i '3d' ins.sql
-echo "INSERT INTO metadata 
+echo "INSERT INTO $2_metadata 
   SELECT xmltable.*
   FROM metadatatemp,
   XMLTABLE ('//BDB_Simple_Attributes' PASSING objectXml

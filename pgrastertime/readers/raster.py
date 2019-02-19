@@ -43,6 +43,14 @@ class RasterReader(Reader):
             pgrast_sql = f.readlines()
             return (''.join(pgrast_sql)).replace('pgrastertime',target_name)
 
+    def getMetadataeTableStructure(self,target_name):
+        # strucure table can be customized by user and are stored in ./sql folder
+        meta_table = CONFIG['app:main'].get('db.metadatatable') 
+        meta_file = os.path.dirname(os.path.realpath(sys.argv[0])) + meta_table
+        with open(meta_file) as f:
+            meta_sql = f.readlines()
+            return (''.join(meta_sql)).replace('metadata',target_name + '_metadata')
+
     def get_file(self, resolution=None):
         
         if float(self.resolution) > float(resolution):
