@@ -3,16 +3,19 @@
 from pgrastertime.data.sqla import DBSession
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
+from pgrastertime.processes.post_proc import PostprocSQL
 from pgrastertime import CONFIG
 import subprocess
 import sys, os
 
 class XMLRastersObject:
 
-    def __init__(self, xml_filename,tablename,force):
+    def __init__(self, xml_filename,tablename,force,sqlfiles,verbose=False):
         self.xml_filename = xml_filename
         self.tablename = tablename
         self.force = force
+        self.sqlfiles = sqlfiles
+        self.verbose = verbose
 
     def insertXML(self, xml_filename):
     
@@ -33,15 +36,17 @@ class XMLRastersObject:
         if subprocess.call(cmd, shell=True) != 0:
              print("Fail to insert sql in database...")
              return False
-        os.remove("ins.sql")      
+        os.remove("ins.sql")
+              
         return True
          
     def importRasters(self):
         
         # if not a DFO file type, exit!
         if (self.xml_filename.find(".object.xml")== -1):
-            print("Not standard XML file")
-            return False
+            error = "Not standard XML file"
+            print(error)
+            return error
     
         ## we need to find ALL raster type file (4) referenced by te XML metadata file
         raster_prefix = self.xml_filename.replace(".object.xml", "")
@@ -55,23 +60,39 @@ class XMLRastersObject:
         
             ## Import all those raster in database
             reader = RasterReader(raster_prefix + '_depth.tiff',self.tablename,self.force)
-            LoadRaster(reader).run()
+            if not LoadRaster(reader).run():
+                return raster_prefix + '_depth.tiff'
             reader = RasterReader(raster_prefix + '_mean.tiff',self.tablename,self.force)
-            LoadRaster(reader).run()
+            if not LoadRaster(reader).run():
+                return raster_prefix + '_mean.tiff'
             reader = RasterReader(raster_prefix + '_stddev.tiff',self.tablename,self.force)
-            LoadRaster(reader).run()
+            if not LoadRaster(reader).run():
+                return raster_prefix + '_stddev.tiff'
             reader = RasterReader(raster_prefix + '_density.tiff',self.tablename,self.force)
-            LoadRaster(reader).run()
+            if not LoadRaster(reader).run():
+                return raster_prefix + '_density.tiff'
             
+            # here run postproc for each raster_prefix and self.tablename
+            # Finaly, user create some post process SQL to run over loaded table
+            # User can have multiple SQL file to run       
+            if self.sqlfiles is not None:
+                if self.verbose:
+                    print ("Post process SQL file: " + self.sqlfiles)
+                head, tail = os.path.split(raster_prefix)
+                PostprocSQL(self.sqlfiles, self.tablename, tail, False, self.verbose).execute()
+         
             # OK we can insert Metadata in database
-            
             if not (self.insertXML(self.xml_filename)):
-                print("Fail to insert XML metadata in database")
-                return False
+                error = "Fail to insert XML metadata in database"
+                print(error)
+                return error
             else:
-                print("Insert XML metadata in metadata table successfully!")
-                return True
+                if self.verbose:
+                    print("Insert XML metadata in metadata table successfully!")
         
         else:
-            print("ERROR source file missing for " + xml_objfile )
-            return False
+            error = "ERROR source file missing for " + xml_objfile
+            print(error)
+            return error
+        
+        return "SUCCESS"

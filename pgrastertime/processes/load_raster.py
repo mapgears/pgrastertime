@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import subprocess
-
+from sqlalchemy.exc import DatabaseError
 from pgrastertime.data.sqla import DBSession
 from pgrastertime import CONFIG
 from pgrastertime.processes.process import Process
@@ -45,5 +45,13 @@ class LoadRaster(Process):
                     try:
                         DBSession().execute(sql)
                         DBSession().commit()                          
-                    except:
-                        print("Fail to update matadata of tif file")
+                    except DatabaseError as error:
+                        print('Fail to run SQL : %s ' % (error.args[0]))
+                        return False
+                
+                
+                else:
+                    return False
+        
+        # everything is OK
+        return True

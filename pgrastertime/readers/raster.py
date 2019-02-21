@@ -16,7 +16,7 @@ class RasterReader(Reader):
 
     filename = None
 
-    def __init__(self, filename,tablename,force):
+    def __init__(self, filename, tablename, force, verbose=False):
         self.filename = os.path.basename(filename)
         self.dirname = os.path.dirname(filename)
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
@@ -26,6 +26,7 @@ class RasterReader(Reader):
         self.date = datetime.now()
         self.tablename = tablename
         self.force = force
+        self.verbose = verbose
 
     def __del__(self):
         rmtree(self.destination)
@@ -79,9 +80,9 @@ class RasterReader(Reader):
         filename = '{}{}'.format(resolution, self.extension)
         fullpath = os.path.join(self.destination, filename)
         self.resolution=resolution
-        print ("Align pixels on resolution/Reproject with GDAL of " + self.filename)
+        if self.verbose:
+            print ("Align pixels on resolution/Reproject with GDAL of " + self.filename)
         gdal.Warp(fullpath, dataset, options=opt)
-        print ("Processed successfully!")
+        if self.verbose:
+            print ("Processed successfully!")
         return fullpath
-
-

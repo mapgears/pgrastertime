@@ -3,7 +3,7 @@ import sqlalchemy as sa
 from .sqla import Base
 from pgrastertime import CONFIG
 from pgrastertime.data.sqla import DBSession
-from pgrastertime.processes import PostprocSQL
+from pgrastertime.processes.post_proc import PostprocSQL
 
 
 class PGRasterTime(Base):
@@ -77,11 +77,11 @@ class SQLModel():
             pgrast_sql = f.readlines()
             pgrast_target_table = ''.join(pgrast_sql).replace('pgrastertime',target_name)
         try:
-            DBSession().execute("DROP TABLE IF EXISTS " + args.tablename)
+            DBSession().execute("DROP TABLE IF EXISTS " + target_name)
             DBSession().execute(pgrast_target_table)
             DBSession().commit()
-        except:
-            print("Fail to rebuild pgrastertime target table")
+        except sa.exc.DatabaseError as error:
+             print('Fail to run SQL : %s ' % (error.args[0]))
 
     def setMetadataeTableStructure(target_name):
         # strucure table can be customized by user and are stored in ./sql folder
@@ -91,15 +91,14 @@ class SQLModel():
             meta_sql = f.readlines()
             mate_target_table = ''.join(meta_sql).replace('metadata',target_name + '_metadata')
         try:
-            DBSession().execute("DROP TABLE IF EXISTS " + args.tablename + "_metadata")
+            DBSession().execute("DROP TABLE IF EXISTS " + target_name + "_metadata")
             DBSession().execute(mate_target_table)
             DBSession().commit()
-        except:
-            print("Fail to rebuild metadata target table")
+        except sa.exc.DatabaseError as error:
+             print('Fail to run SQL : %s ' % (error.args[0]))
 
-    def deployPgrastertimeTable(root,tablename):
+    def runSQL(root,tablename,process, show_result=False,verbose=False):
            
-           deploy_script = root + \
-                           CONFIG['app:main'].get('db.sqlpath') + "/deploy.sql"
-           PostprocSQL(deploy_script,tablename).execute()
+           script = root + CONFIG['app:main'].get('db.sqlpath') + "/" + process + ".sql"
+           PostprocSQL(script,tablename, None ,show_result,verbose).execute()
      

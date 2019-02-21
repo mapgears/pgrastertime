@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 
-## from pgrastertime.data.sqla import DBSession
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
 from pgrastertime.data.sqla import DBSession
+from sqlalchemy.exc import DatabaseError
 from pgrastertime import CONFIG
 import subprocess
 import sys, os, re
 
 class PostprocSQL:
 
-    def __init__(self, sqlfiles,tablename):
+    def __init__(self, sqlfiles, tablename, rasterfile=None, show_result=False,verbose=False):
         self.sqlfiles = sqlfiles
         self.tablename = tablename
+        self.rasterfile = rasterfile
+        self.show_result = show_result
+        self.verbose = verbose
     
     def removedCommentedline(self,sql):
         # removed comment line in SQL file
@@ -44,7 +47,26 @@ class PostprocSQL:
                 for cmd in sqlcmds:
                     # for each SQL command ended by ';' in file
                     sql = cmd.replace("pgrastertime", self.tablename).strip()
+                    
+                    # postproc need a specific flag that will help to optimize the post process.
+                    # Without this flag, when pgrastertime run over large volume of file, the post proc 
+                    # will take toooo much time.
+                    if self.rasterfile is not None:
+                        sql = sql.replace("rasterfile", self.rasterfile)
                     if sql != '':
-                        DBSession().execute(sql)
-                        DBSession().commit()
-                print("Post process run successfully!")   
+                        if self.verbose:
+                            print(sql)
+                        try:
+                            r = DBSession().execute(sql)
+                            if self.show_result:
+                                for row in r:
+                                    print (row)
+
+                            # in case of update/insert/delete/drop
+                            DBSession().commit()
+                            
+                        except DatabaseError as error:
+                            print('Fail to run SQL : %s ' % (error.args[0]))
+                            return False
+                            
+                print("Post process run successfully!")

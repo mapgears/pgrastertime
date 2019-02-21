@@ -8,8 +8,8 @@ import argparse, os, sys, time
 from pgrastertime import init_config
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
-from pgrastertime.processes import XMLRastersObject
 from pgrastertime.processes import PostprocSQL
+from pgrastertime.processes import XMLRastersObject
 from pgrastertime.data.models import SQLModel
 
 from pgrastertime.processes.spinner import Spinner
@@ -46,7 +46,7 @@ def parse_arguments():
         help='Reader driver options',
     )
     parser.add_argument(
-        '--processing', '-p', default='',  choices=['load', 'xml', 'deploy', 'volume', 'sedimentation'],
+        '--processing', '-p', default='',  choices=['load', 'xml', 'deploy', 'volume', 'sedimentation', 'validate'],
         help='Processing option',
     )
     parser.add_argument(
@@ -84,7 +84,16 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
-    init_config(args.config_file)
+    
+    # if not set use local.ini
+    if not (args.config_file):
+        inif = "local.ini"
+    else:
+        inif = args.config_file
+    print(inif)
+    init_config(inif)
+    
+    # init the spiner for futur use
     spinner = Spinner()
 
     # Sedimentation process
@@ -97,20 +106,24 @@ def main():
         print("Volume query ... Process not define!")
         exit()
 
-    # Deploy process
     if args.processing == 'deploy':
-        
+
         print("Deploy pgrastertime table %s to production ... " % args.tablename)
         spinner.start()
-        SQLModel.deployPgrastertimeTable(root,args.tablename)
+        SQLModel.runSQL(root, args.tablename, args.processing, False,args.verbose)
         spinner.stop()
         exit()
+        
+    if args.processing == 'validate':
 
+        print("Validate pgrastertime table %s ... " % args.tablename)
+        SQLModel.runSQL(root, args.tablename, args.processing,True,args.verbose)
+        exit()
+        
     # if force, we will drop et rebuilt table
     if args.force:
         SQLModel.setPgrastertimeTableStructure(args.tablename)
         SQLModel.setMetadataeTableStructure(args.tablename)
-
     
     # 1. Load Processing Class
     # TODO: Replace this by a factory
@@ -125,6 +138,12 @@ def main():
         # TODO: Handle dry run, force overwrite and reset-data
         process_cls.run()
         
+        # Finaly, user create some post process SQL to run over loaded table
+        # User can have multiple SQL file to run       
+        if self.sqlfiles is not None:
+            print("Post process SQL file: " + self.sqlfiles)
+            PostprocSQL(args.sqlfiles,args.tablename).execute()
+        
     elif args.processing == 'xml':
     
         # all XML object refer to 4 raster files that we 
@@ -132,20 +151,17 @@ def main():
         if os.path.isdir(args.reader):    
             for file in os.listdir(args.reader):
                 if (os.path.splitext(file)[-1].lower()== '.xml'):
-                    XMLRastersObject(os.path.join(args.reader, file),args.tablename,args.force).importRasters()
-            
+                    XMLRastersObject(os.path.join(args.reader, file),
+                                     args.tablename,
+                                     args.force,
+                                     args.sqlfiles,
+                                     args.verbose).importRasters()
 
         elif os.path.isfile(args.reader):
             # user specify a file instead of a folder to process
             # Import all raster files link to the XML object
-            XMLRastersObject(args.reader,args.tablename,args.force).importRasters()
-            
-    # Finaly, user create some post process SQL to run over loaded table
-    # User can have multiple SQL file to run       
-    if args.sqlfiles is not None:
-        print("Post process SQL file: " + args.sqlfiles)
-        spinner = Spinner()
-        spinner.start()
-        PostprocSQL(args.sqlfiles,args.tablename).execute()
-        spinner.stop()
-        
+            XMLRastersObject(args.reader,
+                             args.tablename,
+                             args.force,
+                             args.sqlfiles,
+                             args.verbose).importRasters()
