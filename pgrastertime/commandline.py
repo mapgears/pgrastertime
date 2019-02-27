@@ -9,10 +9,12 @@ from pgrastertime import init_config
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
 from pgrastertime.processes import PostprocSQL
-from pgrastertime.processes import XMLRastersObject
+from pgrastertime.processes.spinner import Spinner
 from pgrastertime.data.models import SQLModel
 
-from pgrastertime.processes.spinner import Spinner
+#custom class
+from pgrastertime.processes import XMLRastersObject
+from pgrastertime.processes.sedimentation import Sedimentation
 
 root = os.path.dirname(os.path.dirname(__file__))
 
@@ -38,8 +40,8 @@ def parse_arguments():
         help="Custom SQL files script to process, separeted by commas"
     )
     parser.add_argument(
-        '--input-dataset', '-i', default='', 
-        help="Input Dataset used as an option for processing (shapefiles or geojson)"
+        '--dataset', '-d', default='', 
+        help="Input Dataset used as an option for processing (shapefiles)"
     )
     parser.add_argument(
         '--reader', '-r', default='',
@@ -50,11 +52,15 @@ def parse_arguments():
         help='Processing option',
     )
     parser.add_argument(
-        '--output', '-O', default='', 
-        help='Output shapefiles'
+        '--output', '-o', default='', 
+        help='Output format shapefiles or PostGIS table'
     )
     parser.add_argument(
-        '--option', '-oi', nargs='?', action='append',
+        '--output-format', '-of', default='', choices=['gtiff', 'pg'],
+        help='Output format Geotiff or PostGIS table'
+    )
+    parser.add_argument(
+        '--param', '-m', nargs='?', action='append',
         help='Option(s) input'
     )
     parser.add_argument(
@@ -90,17 +96,17 @@ def main():
         inif = "local.ini"
     else:
         inif = args.config_file
-    print(inif)
+    
     init_config(inif)
     
     # init the spiner for futur use
     spinner = Spinner()
 
-    # Sedimentation process
-    if args.processing == 'sedimentation':
-        print("Sedimentation query ... Process not define!")
+    # Custom Sedimentation process
+    if args.processing == 'sedimentation':        
+        Sedimentation(args.tablename,args.param,args.dataset,args.output,args.output_format,args.verbose).run()
         exit()
-        
+
     # Volume process
     if args.processing == 'volume':
         print("Volume query ... Process not define!")
@@ -110,7 +116,7 @@ def main():
 
         print("Deploy pgrastertime table %s to production ... " % args.tablename)
         spinner.start()
-        SQLModel.runSQL(root, args.tablename, args.processing, False,args.verbose)
+        SQLModel.runSQL('', args.tablename, args.processing, False,args.verbose)
         spinner.stop()
         exit()
         
@@ -148,14 +154,28 @@ def main():
     
         # all XML object refer to 4 raster files that we 
         # need to load in database.  If it's a directory;
+        error_list = []
+        ns=nb=er=0
         if os.path.isdir(args.reader):    
             for file in os.listdir(args.reader):
-                if (os.path.splitext(file)[-1].lower()== '.xml'):
-                    XMLRastersObject(os.path.join(args.reader, file),
+                if (os.path.splitext(file)[-1].lower() == '.xml'):
+                    nb += 1
+                    if (XMLRastersObject(os.path.join(args.reader, file),
                                      args.tablename,
                                      args.force,
                                      args.sqlfiles,
-                                     args.verbose).importRasters()
+                                     args.verbose).importRasters() != "SUCCESS"):
+                        er += 1
+                        error_list.append(os.path.join(args.reader, file))
+                    else:
+                        ns += 1
+
+            # Print result of process
+            print (" Convert %d files of %d" % (ns,nb))
+            if len(error_list):
+                print ("Invalid or corrupt files list:")
+                print ("\n".join(error_list))
+
 
         elif os.path.isfile(args.reader):
             # user specify a file instead of a folder to process

@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# shapefiles
+#
+*.shp
+*.shx
+*.prj
+*.dbf
+
 # C extensions
 *.so
 

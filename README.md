@@ -11,7 +11,7 @@ will be used to query raster value at a specific time for analysis.
 
 ## Python virtual environment
 ```
-sudo apt install python3 pip
+sudo apt install python3 pip python-pip
 pip install --user pipenv
 pipenv install
 cp development.ini local.ini
@@ -20,15 +20,16 @@ Edit the local.ini to fit your installation
 
 ## Update dependencies
 ```
+pipenv shell
 pipenv sync
 ```
+*NOTE:* If GDAL Python Library fail to install do this:
 
-## GDAL:
-Require GDAL >= 2.1
 ```
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
 pipenv run pip install "GDAL<=$(gdal-config --version)"
+
 ```
 
 ## Database
@@ -107,21 +108,34 @@ Postprocess script (-s option) are execute after each raster updated in table.  
 name and the pgrastertime script will find and replace them with your target table name of `-t` flag. 
 
 ```
-pgrastertime -c local.ini -s ./sql/postprocess.sql -t datatest -f -r ../data/data_test/18g153129011_0250_0250.object.xml -p xml
+pgrastertime -s ./sql/postprocess.sql -t testtable -f -r ../data/data_test/18g153129011_0250_0250.object.xml -p xml
 ```
+
 *NOTE:* `-f` optional flag to force overwrite the target table
 
 You can `deploy` your pgrastertable table ( `-t` flag) to your production table through `./sql/deploy.sql` script (edit this
 script for your needed).  
 
 ```
-pgrastertime -c local.ini -p deploy -t datatest
+pgrastertime -p deploy -t testtable
 ```
 
 Validation script can be use and updated for your need.
 
 ```
-pgrastertime -c local.ini -p validate -t datatest
+pgrastertime -p validate -t datatest
+```
+
+This custom sedimentation process need multiple input value add with `-m` flags.  This example output the table processed with a cutome postgresql function to a tif file
+
+```
+pgrastertime -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22' -m resolution=4 -d ./datatest/secteur.shp -o ./datatest/sm1.tif -of gtiff -v -p sedimentation
+```
+
+In this example, the output is a Postgresql table `my_table`
+
+```
+pgrastertime -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22' -m resolution=4 -d ./datatest/secteur.shp -o my_table -of pg -v -p sedimentation
 ```
 
 ## Todo list

@@ -4,18 +4,20 @@ from pgrastertime.data.sqla import DBSession
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
 from pgrastertime.processes.post_proc import PostprocSQL
+from pgrastertime.processes.spinner import Spinner
 from pgrastertime import CONFIG
 import subprocess
 import sys, os
 
 class XMLRastersObject:
 
-    def __init__(self, xml_filename,tablename,force,sqlfiles,verbose=False):
+    def __init__(self, xml_filename,tablename,force,sqlfiles, rasterfile, verbose=False):
         self.xml_filename = xml_filename
         self.tablename = tablename
         self.force = force
         self.sqlfiles = sqlfiles
         self.verbose = verbose
+        self.rasterfile = rasterfile
 
     def insertXML(self, xml_filename):
     
@@ -76,10 +78,13 @@ class XMLRastersObject:
             # Finaly, user create some post process SQL to run over loaded table
             # User can have multiple SQL file to run       
             if self.sqlfiles is not None:
+                spinner = Spinner()
+                spinner.start()
                 if self.verbose:
                     print ("Post process SQL file: " + self.sqlfiles)
                 head, tail = os.path.split(raster_prefix)
                 PostprocSQL(self.sqlfiles, self.tablename, tail, False, self.verbose).execute()
+                spinner.stop()
          
             # OK we can insert Metadata in database
             if not (self.insertXML(self.xml_filename)):
@@ -92,7 +97,8 @@ class XMLRastersObject:
         
         else:
             error = "ERROR source file missing for " + xml_objfile
-            print(error)
-            return error
+            if self.verbose:
+                print(error)
+            return xml_objfile
         
         return "SUCCESS"

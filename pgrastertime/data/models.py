@@ -72,8 +72,7 @@ class SQLModel():
     def setPgrastertimeTableStructure(target_name):
         # strucure table can be customized by user and are stored in ./sql folder
         pgrast_table = CONFIG['app:main'].get('db.pgrastertable') 
-        pgrast_file = os.path.dirname(os.path.realpath(sys.argv[0])) + pgrast_table
-        with open(pgrast_file) as f:
+        with open(pgrast_table) as f:
             pgrast_sql = f.readlines()
             pgrast_target_table = ''.join(pgrast_sql).replace('pgrastertime',target_name)
         try:
@@ -86,8 +85,7 @@ class SQLModel():
     def setMetadataeTableStructure(target_name):
         # strucure table can be customized by user and are stored in ./sql folder
         meta_table = CONFIG['app:main'].get('db.metadatatable') 
-        meta_file = os.path.dirname(os.path.realpath(sys.argv[0])) + meta_table
-        with open(meta_file) as f:
+        with open(meta_table) as f:
             meta_sql = f.readlines()
             mate_target_table = ''.join(meta_sql).replace('metadata',target_name + '_metadata')
         try:
