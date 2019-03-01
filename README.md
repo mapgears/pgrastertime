@@ -108,10 +108,11 @@ Postprocess script (-s option) are execute after each raster updated in table.  
 name and the pgrastertime script will find and replace them with your target table name of `-t` flag. 
 
 ```
-pgrastertime -s ./sql/postprocess.sql -t testtable -f -r ../data/data_test/18g153129011_0250_0250.object.xml -p xml
+pgrastertime -s ./sql/postprocess.sql -t testtable -f -r ../data/data_test/ -p xml
 ```
 
-*NOTE:* `-f` optional flag to force overwrite the target table
+ * The force `-f` optional flag is used to force overwrite the target table.  When force is not use and `-r` is a directory, all validation is made to import ONLY raster that is not already processed.  This check is made through the metadata target raster table.
+ * 
 
 You can `deploy` your pgrastertable table ( `-t` flag) to your production table through `./sql/deploy.sql` script (edit this
 script for your needed).  

@@ -3,7 +3,7 @@ Loads raster data in Postgresql database with pgRaster extension, that can be us
 Temporal raster file will be added to a master history table based on a time component.
 """
 
-import argparse, os, sys, time
+import argparse, os, sys, time, glob
 
 from pgrastertime import init_config
 from pgrastertime.readers import RasterReader
@@ -156,10 +156,15 @@ def main():
         # need to load in database.  If it's a directory;
         error_list = []
         ns=nb=er=0
-        if os.path.isdir(args.reader):    
+        if os.path.isdir(args.reader):
+        
+            # we will inform each loop how many file left ...
+            xmlCounter = len(glob.glob1(args.reader,"*.xml")) 
+               
             for file in os.listdir(args.reader):
                 if (os.path.splitext(file)[-1].lower() == '.xml'):
                     nb += 1
+                    print ("\n Process file %d of %d ..." % (nb,xmlCounter))
                     if (XMLRastersObject(os.path.join(args.reader, file),
                                      args.tablename,
                                      args.force,
@@ -171,7 +176,7 @@ def main():
                         ns += 1
 
             # Print result of process
-            print (" Convert %d files of %d" % (ns,nb))
+            print ("\n Convert %d files of %d" % (ns,nb))
             if len(error_list):
                 print ("Invalid or corrupt files list:")
                 print ("\n".join(error_list))

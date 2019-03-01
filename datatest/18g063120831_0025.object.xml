@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BDB_Simple_Attributes>
   <Attribute name="DRVAL1">
-    <Value>10.825</Value>
+    <Value>10.884348</Value>
   </Attribute>
   <Attribute name="DRVAL2">
-    <Value>20.516001</Value>
+    <Value>15.846711</Value>
   </Attribute>
   <Attribute name="DUNITS">
     <Value>metres</Value>
   </Attribute>
   <Attribute name="OBJNAM">
-    <Value>18g153129011_0250</Value>
+    <Value>18g063120831</Value>
   </Attribute>
   <Attribute name="RECDAT">
-    <Value>20181018</Value>
+    <Value>20180727</Value>
   </Attribute>
   <Attribute name="SUREND">
-    <Value>20181017T160100</Value>
+    <Value>20180727T162700</Value>
   </Attribute>
   <Attribute name="SURSTA">
-    <Value>20181017T130000</Value>
+    <Value>20180727T155506</Value>
   </Attribute>
   <Attribute name="SURTYP">
     <Value>"Avant dragage / Before Dredging"</Value>
   </Attribute>
   <Attribute name="TECSOU">
-    <Value>"found by echo-sounder"</Value>
+    <Value>"found by multi-beam"</Value>
   </Attribute>
   <Attribute name="VERDAT">
     <Value>Lower Low Water Large Tide</Value>
   </Attribute>
   <Attribute name="cretim">
-    <Value>20181018 174140.290</Value>
+    <Value>20180727 174616.258</Value>
   </Attribute>
   <Attribute name="hcosys">
     <Value>PROJCS["NAD83(CSRS) / MTM zone 7",
@@ -60,29 +60,29 @@
     <Value>7000000</Value>
   </Attribute>
   <Attribute name="modtim">
-    <Value>20181018 174140.275</Value>
+    <Value>20180727 174622.404</Value>
   </Attribute>
   <Attribute name="planam">
-    <Value>"F.C.G. Smith"</Value>
+    <Value>"GC-03"</Value>
   </Attribute>
   <Attribute name="srcfil">
-    <Value>18g153129011_0250.csar</Value>
+    <Value>18g063120831.csar</Value>
   </Attribute>
   <Attribute name="srfcat">
     <Value>Standard</Value>
   </Attribute>
   <Attribute name="srfdsc">
     <Value>&lt;?xml version="1.0"?&gt;
-&lt;Bathy_Surface_Descriptor&gt;&lt;band name="Deep" default_elevation="false" hidden="false" category="0" direction="3" type="0" min_value="-20.755" max_value="-10.960" unit="m"/&gt;&lt;band name="Density" default_elevation="false" hidden="false" category="0" direction="0" type="6" min_value="1.000" max_value="41.000" unit=""/&gt;&lt;band name="Depth" default_elevation="true" hidden="false" category="0" direction="3" type="0" min_value="-20.516" max_value="-10.825" unit="m"/&gt;&lt;band name="Depth_Pos" default_elevation="false" hidden="true" category="0" direction="1" type="1" min_value="0.000" max_value="0.000" unit="m"/&gt;&lt;band name="Mean" default_elevation="false" hidden="false" category="0" direction="3" type="0" min_value="-20.641" max_value="-10.941" unit="m"/&gt;&lt;band name="Source_Name" default_elevation="false" hidden="false" category="2" direction="0" type="5" min_value="0.000" max_value="0.000" unit=""/&gt;&lt;band name="Std_Dev" default_elevation="false" hidden="false" category="0" direction="0" type="0" min_value="0.000" max_value="0.972" unit="m"/&gt;&lt;/Bathy_Surface_Descriptor&gt;
+&lt;Bathy_Surface_Descriptor&gt;&lt;band name="Density" default_elevation="false" hidden="false" category="0" direction="0" type="6" min_value="3.000" max_value="59.000" unit=""/&gt;&lt;band name="Depth" default_elevation="true" hidden="false" category="0" direction="3" type="0" min_value="-15.847" max_value="-10.884" unit="m"/&gt;&lt;band name="Hypothesis_Count" default_elevation="false" hidden="false" category="0" direction="0" type="6" min_value="1.000" max_value="6.000" unit=""/&gt;&lt;band name="Mean" default_elevation="false" hidden="false" category="0" direction="3" type="0" min_value="-15.845" max_value="-10.887" unit="m"/&gt;&lt;band name="Std_Dev" default_elevation="false" hidden="false" category="0" direction="0" type="0" min_value="0.000" max_value="0.112" unit="m"/&gt;&lt;/Bathy_Surface_Descriptor&gt;
 </Value>
   </Attribute>
   <Attribute name="srfres">
-    <Value>2.5</Value>
+    <Value>0.25</Value>
   </Attribute>
   <Attribute name="srftyp">
     <Value>CSAR Grid (.csar)</Value>
   </Attribute>
   <Attribute name="uidcre">
-    <Value>DBA</Value>
+    <Value>CBU</Value>
   </Attribute>
 </BDB_Simple_Attributes>

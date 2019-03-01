@@ -69,4 +69,4 @@ class PostprocSQL:
                             print('Fail to run SQL : %s ' % (error.args[0]))
                             return False
                             
-                print("Post process run successfully!")
+                print("\n Post process run successfully!")

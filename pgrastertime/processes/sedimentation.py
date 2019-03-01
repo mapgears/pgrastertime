@@ -119,7 +119,6 @@ class Sedimentation:
     
         # 1. need 3 options: time start, time end, e
         user_param =  self.getParamsDict()
-        print(user_param)
          
         # 2. Load the geometry in database
         conStr = self.serverInitCon()
