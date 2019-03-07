@@ -1,0 +1,213 @@
+diff --git a/gdal/alg/gdalwarper.cpp b/gdal/alg/gdalwarper.cpp
+index 4332582..b12799e 100644
+--- a/gdal/alg/gdalwarper.cpp
++++ b/gdal/alg/gdalwarper.cpp
+@@ -1584,6 +1584,8 @@ GDALSerializeWarpOptions( const GDALWarpOptions *psWO )
+         pszAlgName = "Quartile1";
+     else if( psWO->eResampleAlg == GRA_Q3 )
+         pszAlgName = "Quartile3";
++    else if( psWO->eResampleAlg == GRA_Sum )
++        pszAlgName = "Sum";
+     else
+         pszAlgName = "Unknown";
+ 
+@@ -1833,6 +1835,8 @@ GDALWarpOptions * CPL_STDCALL GDALDeserializeWarpOptions( CPLXMLNode *psTree )
+         psWO->eResampleAlg = GRA_Q1;
+     else if( EQUAL(pszValue, "Quartile3") )
+         psWO->eResampleAlg = GRA_Q3;
++    else if( EQUAL(pszValue, "Sum") )
++        psWO->eResampleAlg = GRA_Sum;
+     else if( EQUAL(pszValue, "Default") )
+         /* leave as is */;
+     else
+diff --git a/gdal/alg/gdalwarper.h b/gdal/alg/gdalwarper.h
+index d25f61e..f1c5d2f 100644
+--- a/gdal/alg/gdalwarper.h
++++ b/gdal/alg/gdalwarper.h
+@@ -60,7 +60,8 @@ typedef enum {
+   /*! Min (selects minimum of all non-NODATA contributing pixels) */ GRA_Min=9,
+   /*! Med (selects median of all non-NODATA contributing pixels) */ GRA_Med=10,
+   /*! Q1 (selects first quartile of all non-NODATA contributing pixels) */ GRA_Q1=11,
+-  /*! Q3 (selects third quartile of all non-NODATA contributing pixels) */ GRA_Q3=12
++  /*! Q3 (selects third quartile of all non-NODATA contributing pixels) */ GRA_Q3=12,
++  /*! Sum (computes the sum of all non-NODATA contributing pixels) */ GRA_Sum=13
+ } GDALResampleAlg;
+ 
+ /*! GWKAverageOrMode Algorithm */
+@@ -70,7 +71,8 @@ typedef enum {
+     /*! Mode of GDT_Byte, GDT_UInt16, or GDT_Int16 */ GWKAOM_Imode=3,
+     /*! Maximum */ GWKAOM_Max=4,
+     /*! Minimum */ GWKAOM_Min=5,
+-    /*! Quantile */ GWKAOM_Quant=6
++    /*! Quantile */ GWKAOM_Quant=6,
++    /*! Sum */ GWKAOM_Sum=7
+ } GWKAverageOrModeAlg;
+ 
+ /*! @cond Doxygen_Suppress */
+diff --git a/gdal/alg/gdalwarpkernel.cpp b/gdal/alg/gdalwarpkernel.cpp
+index fc59a2f..5fedfb4 100644
+--- a/gdal/alg/gdalwarpkernel.cpp
++++ b/gdal/alg/gdalwarpkernel.cpp
+@@ -93,6 +93,7 @@ static const int anGWKFilterRadius[] =
+     0,  // Med
+     0,  // Q1
+     0,  // Q3
++    0,  // Sum
+ };
+ 
+ static double GWKBilinear(double dfX);
+@@ -115,6 +116,7 @@ static const FilterFuncType apfGWKFilter[] =
+     nullptr,  // Med
+     nullptr,  // Q1
+     nullptr,  // Q3
++    nullptr,  // Sum
+ };
+ 
+ // TODO(schwehr): Can we make these functions have a const * const arg?
+@@ -138,6 +140,7 @@ static const FilterFunc4ValuesType apfGWKFilter4Values[] =
+     nullptr,  // Med
+     nullptr,  // Q1
+     nullptr,  // Q3
++    nullptr,  // Sum
+ };
+ 
+ int GWKGetFilterRadius(GDALResampleAlg eResampleAlg)
+@@ -622,7 +625,7 @@ static CPLErr GWKRun( GDALWarpKernel *poWK,
+  * Resampling algorithm.
+  *
+  * The resampling algorithm to use.  One of GRA_NearestNeighbour, GRA_Bilinear,
+- * GRA_Cubic, GRA_CubicSpline, GRA_Lanczos, GRA_Average, or GRA_Mode.
++ * GRA_Cubic, GRA_CubicSpline, GRA_Lanczos, GRA_Average, GRA_Mode or GRA_Sum.
+  *
+  * This field is required. GDT_NearestNeighbour may be used as a default
+  * value.
+@@ -1279,6 +1282,9 @@ CPLErr GDALWarpKernel::PerformWarp()
+     if( eResample == GRA_Q3 )
+         return GWKAverageOrMode( this );
+ 
++    if( eResample == GRA_Sum )
++        return GWKAverageOrMode( this );
++
+     if (!GDALDataTypeIsComplex(eWorkingDataType))
+     {
+         return GWKRealCase( this );
+@@ -5810,6 +5816,10 @@ static void GWKAverageOrModeThread( void* pData)
+         nAlgo = GWKAOM_Quant;
+         quant = 0.75;
+     }
++    else if( poWK->eResample == GRA_Sum )
++    {
++        nAlgo = GWKAOM_Sum;
++    }
+     else
+     {
+         // Other resample algorithms not permitted here.
+@@ -6254,6 +6264,51 @@ static void GWKAverageOrModeThread( void* pData)
+                         dfRealValuesTmp.clear();
+                     }
+                 }  // Quantile.
++                else if( nAlgo == GWKAOM_Sum )
++                // poWK->eResample == GRA_Sum
++                {
++                    // This code adapted from nAlgo 1 method, GRA_Average.
++                    for( int iSrcY = iSrcYMin; iSrcY < iSrcYMax; iSrcY++ )
++                    {
++                        for( int iSrcX = iSrcXMin; iSrcX < iSrcXMax; iSrcX++ )
++                        {
++                            iSrcOffset = iSrcX + iSrcY * nSrcXSize;
++
++                            if( poWK->panUnifiedSrcValid != nullptr
++                                && !(poWK->panUnifiedSrcValid[iSrcOffset>>5]
++                                     & (0x01 << (iSrcOffset & 0x1f))) )
++                            {
++                                continue;
++                            }
++
++                            nCount2++;
++                            if( GWKGetPixelValue(
++                                    poWK, iBand, iSrcOffset,
++                                    &dfBandDensity, &dfValueRealTmp,
++                                    &dfValueImagTmp ) &&
++                                dfBandDensity > BAND_DENSITY_THRESHOLD )
++                            {
++                                nCount++;
++                                dfTotalReal += dfValueRealTmp;
++                                if (bIsComplex)
++                                {
++                                    dfTotalImag += dfValueImagTmp;
++                                }
++                            }
++                        }
++                    }
++
++                    if( nCount > 0 )
++                    {
++                        dfValueReal = dfTotalReal;
++                        if (bIsComplex)
++                        {
++                            dfValueImag = dfTotalImag;
++                        }
++                        dfBandDensity = 1;
++                        bHasFoundDensity = true;
++                    }
++                }  // GRA_Sum.
+ 
+ /* -------------------------------------------------------------------- */
+ /*      We have a computed value from the source.  Now apply it to      */
+diff --git a/gdal/alg/gdalwarpoperation.cpp b/gdal/alg/gdalwarpoperation.cpp
+index 476d05c..bb123c7 100644
+--- a/gdal/alg/gdalwarpoperation.cpp
++++ b/gdal/alg/gdalwarpoperation.cpp
+@@ -267,7 +267,8 @@ int GDALWarpOperation::ValidateOptions()
+         && psOptions->eResampleAlg != GRA_Min
+         && psOptions->eResampleAlg != GRA_Med
+         && psOptions->eResampleAlg != GRA_Q1
+-        && psOptions->eResampleAlg != GRA_Q3)
++        && psOptions->eResampleAlg != GRA_Q3
++        && psOptions->eResampleAlg != GRA_Sum)
+     {
+         CPLError( CE_Failure, CPLE_IllegalArg,
+                   "GDALWarpOptions.Validate(): "
+diff --git a/gdal/apps/gdalwarp_bin.cpp b/gdal/apps/gdalwarp_bin.cpp
+index 8336143..f0fa9ed 100644
+--- a/gdal/apps/gdalwarp_bin.cpp
++++ b/gdal/apps/gdalwarp_bin.cpp
+@@ -167,6 +167,7 @@ algorithm, worst interpolation quality).</dd>
+ <dt><b>med</b></dt>: <dd>median resampling, selects the median value of all non-NODATA contributing pixels. (GDAL >= 2.0.0)</dd>
+ <dt><b>q1</b></dt>: <dd>first quartile resampling, selects the first quartile value of all non-NODATA contributing pixels. (GDAL >= 2.0.0)</dd>
+ <dt><b>q3</b></dt>: <dd>third quartile resampling, selects the third quartile value of all non-NODATA contributing pixels. (GDAL >= 2.0.0)</dd>
++<dt><b>sum</b></dt>: <dd>sum resampling, computes the sum of all non-NODATA contributing pixels. (GDAL >= 2.4.1)</dd>
+ </dl>
+ <dt> <b>-srcnodata</b> <em>value [value...]</em>:</dt><dd> Set nodata masking
+ values for input bands (different values can be supplied for each band).  If
+@@ -342,7 +343,7 @@ static void Usage(const char* pszErrorMsg = nullptr)
+         "    srcfile* dstfile\n"
+         "\n"
+         "Available resampling methods:\n"
+-        "    near (default), bilinear, cubic, cubicspline, lanczos, average, mode,  max, min, med, Q1, Q3.\n" );
++        "    near (default), bilinear, cubic, cubicspline, lanczos, average, mode,  max, min, med, Q1, Q3, sum.\n" );
+ 
+     if( pszErrorMsg != nullptr )
+         fprintf(stderr, "\nFAILURE: %s\n", pszErrorMsg);
+diff --git a/gdal/apps/gdalwarp_lib.cpp b/gdal/apps/gdalwarp_lib.cpp
+index af69c91..dc6fa8f 100644
+--- a/gdal/apps/gdalwarp_lib.cpp
++++ b/gdal/apps/gdalwarp_lib.cpp
+@@ -150,7 +150,7 @@ struct GDALWarpAppOptions
+ 
+     /*! the resampling method. Available methods are: near, bilinear,
+         cubic, cubicspline, lanczos, average, mode, max, min, med,
+-        q1, q3 */
++        q1, q3, sum */
+     GDALResampleAlg eResampleAlg;
+ 
+     /*! nodata masking values for input bands (different values can be supplied
+@@ -3605,6 +3605,8 @@ GDALWarpAppOptions *GDALWarpAppOptionsNew(char** papszArgv,
+                 psOptions->eResampleAlg = GRA_Q1;
+             else if ( EQUAL(papszArgv[i], "q3") )
+                 psOptions->eResampleAlg = GRA_Q3;
++            else if ( EQUAL(papszArgv[i], "sum") )
++                psOptions->eResampleAlg = GRA_Sum;
+             else
+             {
+                 CPLError(CE_Failure, CPLE_IllegalArg, "Unknown resampling method: %s.", papszArgv[i]);

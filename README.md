@@ -18,6 +18,13 @@ cp development.ini local.ini
 ```
 Edit the local.ini to fit your installation
 
+## Map Algebra 
+This tool need to perform map algebra operations on raster.  We use gdal_calc.py script for this.
+
+```
+wget -O gdal_calc.py https://github.com/OSGeo/gdal/blob/master/gdal/swig/python/scripts/gdal_calc.py
+```
+
 ## Update dependencies
 ```
 pipenv shell
@@ -100,7 +107,7 @@ A specific driver was added for a specific raster format define by an XML file. 
 driver in `process` folder.  As example, `xml_import.py` driver alows to import files link to a specific XML object file.
 
 ```
-pgrastertime -t testtable -r ./datatest/18g153129011_0250_0250.object.xml -p xml
+pgrastertime -t testtable -r ./datatest/18g063120831_0025.object.xml -p xml
 ```
 
 You can add post process SQL script(s) to the command line (can be multiple script separated by commas).  
@@ -112,7 +119,7 @@ pgrastertime -s ./sql/postprocess.sql -t testtable -f -r ../data/data_test/ -p x
 ```
 
  * The force `-f` optional flag is used to force overwrite the target table.  When force is not use and `-r` is a directory, all validation is made to import ONLY raster that is not already processed.  This check is made through the metadata target raster table.
- * 
+ * w
 
 You can `deploy` your pgrastertable table ( `-t` flag) to your production table through `./sql/deploy.sql` script (edit this
 script for your needed).  
@@ -143,7 +150,7 @@ pgrastertime -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22'
 
  * Add createdb script to add in target database all table needed for XML import type
  * Add more validations to report invalide/missing raster or fail process on XML object  
- * Add Volume, Sedimentation process
+ * Add Volume  process
  * Include xml.sh process through SQLAlchemy
 
 

@@ -13,7 +13,8 @@ from pgrastertime.processes.spinner import Spinner
 from pgrastertime.data.models import SQLModel
 
 #custom class
-from pgrastertime.processes import XMLRastersObject
+from pgrastertime.processes.xml_import import XMLRastersObject
+from pgrastertime.processes.xml_resampling import XML2RastersResampling
 from pgrastertime.processes.sedimentation import Sedimentation
 
 root = os.path.dirname(os.path.dirname(__file__))
@@ -137,7 +138,7 @@ def main():
     
         # 2. Load file with reader options
         # TODO: Replace this by a factory
-        reader = RasterReader(args.reader,args.tablename,args.force)
+        reader = RasterReader(args.reader, args.tablename, True ,args.force)
         
         process_cls = LoadRaster(reader)
         # 3. Execute process
@@ -185,8 +186,16 @@ def main():
         elif os.path.isfile(args.reader):
             # user specify a file instead of a folder to process
             # Import all raster files link to the XML object
-            XMLRastersObject(args.reader,
+            #XMLRastersObject(args.reader,
+            #                 args.tablename,
+            #                 args.force,
+            #                 args.sqlfiles,
+            #                 args.verbose).importRasters()
+            
+            XML2RastersResampling(args.reader,
                              args.tablename,
                              args.force,
                              args.sqlfiles,
-                             args.verbose).importRasters()
+                             args.verbose).importRasters()                 
+                             
+                             

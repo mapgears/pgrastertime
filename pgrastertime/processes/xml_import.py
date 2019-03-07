@@ -98,18 +98,17 @@ class XMLRastersObject:
             os.path.isfile(raster_prefix + "_density.tiff")):
         
             print("All raster finded! Importing rasters of " + self.xml_filename)
-        
-            ## Import all those raster in database
-            reader = RasterReader(raster_prefix + '_depth.tiff',self.tablename,self.force)
+              
+            reader = RasterReader(raster_prefix + '_depth.tiff',self.tablename, True, self.force)
             if not LoadRaster(reader).run():
                 return raster_prefix + '_depth.tiff'
-            reader = RasterReader(raster_prefix + '_mean.tiff',self.tablename,self.force)
+            reader = RasterReader(raster_prefix + '_mean.tiff',self.tablename, True, self.force)
             if not LoadRaster(reader).run():
                 return raster_prefix + '_mean.tiff'
-            reader = RasterReader(raster_prefix + '_stddev.tiff',self.tablename,self.force)
+            reader = RasterReader(raster_prefix + '_stddev.tiff',self.tablename, True, self.force)
             if not LoadRaster(reader).run():
                 return raster_prefix + '_stddev.tiff'
-            reader = RasterReader(raster_prefix + '_density.tiff',self.tablename,self.force)
+            reader = RasterReader(raster_prefix + '_density.tiff',self.tablename, True, self.force)
             if not LoadRaster(reader).run():
                 return raster_prefix + '_density.tiff'
             

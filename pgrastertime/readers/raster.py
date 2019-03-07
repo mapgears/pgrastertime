@@ -16,7 +16,7 @@ class RasterReader(Reader):
 
     filename = None
 
-    def __init__(self, filename, tablename, force, verbose=False):
+    def __init__(self, filename, tablename, warp, force, verbose=False, gdalwarp_path=''):
         self.filename = os.path.basename(filename)
         self.dirname = os.path.dirname(filename)
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
@@ -25,8 +25,10 @@ class RasterReader(Reader):
         self.destination = tempfile.mkdtemp()
         self.date = datetime.now()
         self.tablename = tablename
+        self.warp = warp
         self.force = force
         self.verbose = verbose
+        self.gdalwarp_path = gdalwarp_path
 
     def __del__(self):
         rmtree(self.destination)
@@ -66,23 +68,27 @@ class RasterReader(Reader):
                 fname = '{}{}'.format(self.resolution, self.extension)
                 fpath = os.path.join(self.destination, fname)
                 dataset=gdal.Open( fpath, gdal.GA_ReadOnly)
+     
+        # OK we need a tmp filename   
+        filename = '{}{}'.format(resolution, self.extension)
+        fullpath = self.destination + "_" + filename
+        self.resolution=resolution
+                    
+        if self.warp:
         
-        #align pixels and set the destination srs
-        opt = gdal.WarpOptions( resampleAlg='max',
+            #align pixels and set the destination srs
+            opt = gdal.WarpOptions( resampleAlg='max',
                  xRes=resolution,
                  yRes=resolution,
                  dstSRS="EPSG:3979",
                  targetAlignedPixels=True,
                  multithread=True,
                  creationOptions=['COMPRESS=DEFLATE'] )
+        
+            if self.verbose:
+                print ("Align pixels on resolution/Reproject with GDAL of " + self.filename)
+            gdal.Warp(fullpath, dataset, options=opt)
+            if self.verbose:
+                print ("Processed successfully!")
 
-
-        filename = '{}{}'.format(resolution, self.extension)
-        fullpath = os.path.join(self.destination, filename)
-        self.resolution=resolution
-        if self.verbose:
-            print ("Align pixels on resolution/Reproject with GDAL of " + self.filename)
-        gdal.Warp(fullpath, dataset, options=opt)
-        if self.verbose:
-            print ("Processed successfully!")
         return fullpath
