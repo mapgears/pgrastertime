@@ -16,11 +16,13 @@ class RasterReader(Reader):
 
     filename = None
 
-    def __init__(self, filename, tablename, warp, force, verbose=False, gdalwarp_path=''):
+    def __init__(self, filename, tablename, warp, force, verbose=False, gdalwarp_path='',raster_type=''):
         self.filename = os.path.basename(filename)
         self.dirname = os.path.dirname(filename)
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
         self.resolution = self.dataset.GetGeoTransform()[1]
+        self.size_x = self.dataset.RasterXSize
+        self.size_y = self.dataset.RasterYSize
         self.extension = os.path.splitext(filename)[1]
         self.destination = tempfile.mkdtemp()
         self.date = datetime.now()
@@ -29,6 +31,7 @@ class RasterReader(Reader):
         self.force = force
         self.verbose = verbose
         self.gdalwarp_path = gdalwarp_path
+        self.raster_type = raster_type
 
     def __del__(self):
         rmtree(self.destination)
@@ -70,7 +73,7 @@ class RasterReader(Reader):
                 dataset=gdal.Open( fpath, gdal.GA_ReadOnly)
      
         # OK we need a tmp filename   
-        filename = '{}{}'.format(resolution, self.extension)
+        filename = '{}{}'.format(self.raster_type + "_" + resolution, self.extension)
         fullpath = self.destination + "_" + filename
         self.resolution=resolution
                     

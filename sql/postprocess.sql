@@ -22,9 +22,15 @@ SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',16,
 SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',8,'rasterfile');
 SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',4,'rasterfile');
 SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',2,'rasterfile');
+SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',1,'rasterfile');
+SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',0.5,'rasterfile');
+SELECT dfo_add_conformance_band('pgrastertime','secteur_sondage','geom_3979',0.25,'rasterfile');
 
 -- Calculate Shoal geometries at 16,8,4 and 2 meters resolution. 
 select dfo_add_shoal_geom ('pgrastertime', 16,0,'rasterfile' );
 select dfo_add_shoal_geom ('pgrastertime', 8,0,'rasterfile' );
 select dfo_add_shoal_geom ('pgrastertime', 4,0,'rasterfile' );
 select dfo_add_shoal_geom ('pgrastertime', 2,0,'rasterfile' );
+select dfo_add_shoal_geom ('pgrastertime', 1,0,'rasterfile' );
+select dfo_add_shoal_geom ('pgrastertime', 0.5,0,'rasterfile' );
+select dfo_add_shoal_geom ('pgrastertime', 0.25,0,'rasterfile' );

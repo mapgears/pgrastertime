@@ -4,7 +4,7 @@ Temporal raster file will be added to a master history table based on a time com
 """
 
 import argparse, os, sys, time, glob
-
+from datetime import datetime
 from pgrastertime import init_config
 from pgrastertime.readers import RasterReader
 from pgrastertime.processes import LoadRaster
@@ -66,11 +66,16 @@ def parse_arguments():
     )
     parser.add_argument(
         '--verbose', '-v',
-        action='count', default=0,
+        action='store_true',
         help="Verbose"
     )
     parser.add_argument(
         '--force', '-f', '--force-overwrite',
+        action='store_true',
+        help="Force overwrite of the historical data"
+    )
+    parser.add_argument(
+        '--dry-run', '-x',
         action='store_true',
         help="Force overwrite of the historical data"
     )
@@ -91,6 +96,9 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
+    
+    if not args.verbose:
+        args.verbose = False
     
     # if not set use local.ini
     if not (args.config_file):
@@ -158,30 +166,64 @@ def main():
         error_list = []
         ns=nb=er=0
         if os.path.isdir(args.reader):
-        
+
             # we will inform each loop how many file left ...
             xmlCounter = len(glob.glob1(args.reader,"*.xml")) 
-               
+ 
+            # We will log how much time it will take
+            start_time = time.time()
+            date_started = str(datetime.now())
+            
+            # Print result in logfile
+            log_date = date_started.replace(" ","_").replace(":","-").split(".", 1)[0]
+            loggingfile = ("pgrastertime_%s.log" % log_date)
+                
             for file in os.listdir(args.reader):
                 if (os.path.splitext(file)[-1].lower() == '.xml'):
+                    print ("extension:" + os.path.splitext(file)[-1].lower())
                     nb += 1
-                    print ("\n Process file %d of %d ..." % (nb,xmlCounter))
-                    if (XMLRastersObject(os.path.join(args.reader, file),
-                                     args.tablename,
-                                     args.force,
-                                     args.sqlfiles,
-                                     args.verbose).importRasters() != "SUCCESS"):
+                    step = "\n Process file %d of %d ..." % (nb,xmlCounter)
+                    print(step)
+                    logfile = open(loggingfile, "a")  
+                    logfile.write(step)
+                    logfile.close
+                    if (XML2RastersResampling(os.path.join(args.reader, file),
+                             args.tablename,
+                             args.force,
+                             args.sqlfiles,
+                             args.verbose,
+                             args.dry_run).importRasters() != "SUCCESS"):
                         er += 1
                         error_list.append(os.path.join(args.reader, file))
                     else:
                         ns += 1
-
-            # Print result of process
-            print ("\n Convert %d files of %d" % (ns,nb))
+                
+                
+                
+            logfile = open(loggingfile, "a")
+            logfile.write("\n\n==== pgRastertime log file...\n")
+            logfile.write("Param : Target table -> %s \n" % args.tablename)
+            logfile.write("Param : Source directory -> %s \n" % args.reader)
+            logfile.write("Param : Force -> %s \n" % str(args.force))
+            logfile.write("Param : Post process -> %s \n" % args.sqlfiles)
+            logfile.write("====\n")
+            logfile.write("Import Started: %s \n" % date_started.split(".", 1)[0])
+            logfile.write("Import Ended: %s \n" % str(datetime.now()).split(".", 1)[0])
+            logfile.write("Number of XML file to process : %d \n" % xmlCounter)
+            logfile.write("Number of invalide XML file or fail porcess : %d \n" % er)
+            logfile.write("Execution took %s seconds to process \n" % str((time.time() - start_time)).split(".", 1)[0])
+                
             if len(error_list):
-                print ("Invalid or corrupt files list:")
-                print ("\n".join(error_list))
-
+                logfile.write("\n==== Invalid or corrupt files list:")
+                logfile.write("\n".join(error_list))
+                
+            # pintf and close
+            logfile.close
+                
+            with open(loggingfile, "r") as logfile:
+                for line in logfile:
+                    print(line)
+                logfile.close
 
         elif os.path.isfile(args.reader):
             # user specify a file instead of a folder to process
@@ -196,6 +238,7 @@ def main():
                              args.tablename,
                              args.force,
                              args.sqlfiles,
-                             args.verbose).importRasters()                 
+                             args.verbose,
+                             args.dry_run).importRasters()                 
                              
                              

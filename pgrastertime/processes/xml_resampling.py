@@ -13,13 +13,13 @@ import sys, os, ntpath, tempfile
 
 class XML2RastersResampling:
 
-    def __init__(self, xml_filename, tablename, force, sqlfiles, rasterfile, verbose=False):
+    def __init__(self, xml_filename, tablename, force, sqlfiles, verbose, dry_run):
         self.xml_filename = xml_filename
         self.tablename = tablename
         self.force = force
         self.sqlfiles = sqlfiles
         self.verbose = verbose
-        self.rasterfile = rasterfile
+        self.dry_run = dry_run
 
     def getConParam(self):
         conDic = {}
@@ -81,7 +81,7 @@ class XML2RastersResampling:
         
         # if not a DFO file type, exit!
         if (self.xml_filename.find(".object.xml")== -1):
-            error = "Not standard XML file"
+            error = "Not standard XML file:" + self.xml_filename
             print(error)
             return error
     
@@ -146,20 +146,31 @@ class XML2RastersResampling:
                 raster_dict[rtype][r] = '' 
         return raster_dict    
 
-    def getGDALcmd(self, gdalwarp_path, source_file, target_file, resolution, resampling):
-    
-        cmd =  "%sgdalwarp -t_srs EPSG:3979 -co COMPRESS=DEFLATE -tap -tr %s %s -r %s %s %s" % (
+    def getGDALcmd(self, gdalwarp_path, source_file, target_file, resolution, resampling, sz_x=0, sz_y=0):
+        # in some case we have to fix the size of the image.  gdal_calc work only if image are the same dimension
+        if sz_x != 0:
+            size = " -ts %s %s" % (sz_x, sz_y)
+        else:
+            size = ""
+             
+        cmd =  "%sgdalwarp -overwrite -t_srs EPSG:3979 -co COMPRESS=DEFLATE -tap%s -tr %s %s -r %s %s %s" % (
                      gdalwarp_path,
+                     size,
                      resolution,
                      resolution,
                      resampling,
                      source_file,
                      target_file)
         return cmd
-         
+
+    def clearTmp(self):
+        dir_tmp_name = "/tmp/"
+        tmp = os.listdir(dir_tmp_name)
+        for item in tmp:
+            if item.endswith(".tiff"):
+                os.remove(os.path.join(dir_tmp_name, item))         
         
     def ImportXmlObject(self, raster_prefix):
-
 
         # we need the raster file dict
         resolutions = CONFIG['app:main'].get('output.resolutions').split(',')
@@ -167,14 +178,22 @@ class XML2RastersResampling:
         
         
         #  loop in all raster type
+        nb_of_raster = 0
         for raster_type in ['depth', 'density', 'mean', 'stddev']:
-            resolution_id = 0
+            resolution_id = i = 0
+            
             for resolution in resolutions:
-                
+               i += 1 
                # we create the raster object but dont wrap it
                raster_file_name_type = raster_prefix + "_" + raster_type + ".tiff"
-               reader = RasterReader(raster_file_name_type , self.tablename, False, self.force, True, '/home/srvlocadm/gdal-2.4.0/apps/')
-               
+               reader = RasterReader(raster_file_name_type , 
+                                     self.tablename, 
+                                     False, 
+                                     self.force, 
+                                     True, 
+                                     '/home/srvlocadm/gdal-2.4.0/apps/',
+                                     raster_type)
+
                # start to process from initial resolution of the raster.  It can be 25cm ou 2.5m               
                if float(resolution) >= float(reader.resolution):
                    
@@ -182,7 +201,8 @@ class XML2RastersResampling:
                    
                    # we will keep a sequential number for all resolution, 1, 2, 3, 4, 5 ...
                    resolution_id += 1
-                   step1=step2=step3=''
+                   step1=step2=step3=step4=''
+                   
                     ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling                   
                    if resolution_id == 1:
                        # initial warp for reprojection.  We use nearest resample because it's the one
@@ -205,14 +225,14 @@ class XML2RastersResampling:
                         ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
                        if raster_type == 'depth':
                            step1 = self.getGDALcmd(reader.gdalwarp_path, 
-                                             raster_file_name_type,
+                                             raster_dict['depth'][resolution_id-1],
                                              output_raster_filename,
                                              resolution,
                                              'max')
                        
                        if raster_type == 'density':
                             step1 = self.getGDALcmd(reader.gdalwarp_path, 
-                                             raster_file_name_type,
+                                             raster_dict['density'][resolution_id-1],
                                              output_raster_filename,
                                              resolution,
                                              'sum')                     
@@ -220,7 +240,7 @@ class XML2RastersResampling:
                        if raster_type == 'mean':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
                            tmp_step1 = tempfile.NamedTemporaryFile().name + ".tiff"
-                           step1 = "python gdal_calc.py -A %s -B %s --calc='%s' --outfile='%s'" % (
+                           step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['mean'][resolution_id-1],
                                           "A*B",
@@ -231,16 +251,28 @@ class XML2RastersResampling:
                                              tmp_step2,
                                              resolution,
                                              'sum') 
-                           step3 = "python gdal_calc.py -A %s -B %s --calc='%s' --outfile='%s'" % (
+                                             
+                           ## Here we need to downgrade sum resampling to inferior resolution.
+                           ## It's not possible to perform map algebra on diferent raster dimension  (see #403)
+                           #tmp_step3 = tempfile.NamedTemporaryFile().name + ".tiff"
+                           #step3 = self.getGDALcmd(reader.gdalwarp_path, 
+                           #                  tmp_step2,
+                           #                 tmp_step3,
+                           #                 resolutions[i - 2],
+                           #                  'near')                   
+                           
+                           tmp_step4 = tempfile.NamedTemporaryFile().name + ".tiff"
+                           #gdal_calc -A input.tif --outfile=empty.tif --calc "A*0" --NoDataValue=0
+                           step4 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
                                           tmp_step2,
-                                          raster_dict['mean'][resolution_id-1],
+                                          raster_dict['density'][resolution_id],
                                           "A/B",
                                           output_raster_filename)
  
                        if raster_type == 'stddev':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
                            tmp_step1 = tempfile.NamedTemporaryFile().name + ".tiff"
-                           step1 = "python gdal_calc.py -A %s -B %s --calc='%s' --outfile='%s'" % (
+                           step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['stddev'][resolution_id-1],
                                           "(A-1)*B",
@@ -252,46 +284,88 @@ class XML2RastersResampling:
                                              tmp_step2,
                                              resolution,
                                              'sum')  
-                           step3 = "python gdal_calc.py -A %s -B %s --calc='%s' --outfile='%s'" % (
+                           step3 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
                                           tmp_step2,
-                                          raster_dict['mean'][resolution_id-1],
-                                          "sqrt(A/(B-4)",
+                                          raster_dict['density'][resolution_id],
+                                          "sqrt(A/(B-4))",
                                           output_raster_filename)
                    
                    # we keep the file name for loading step
                    raster_dict[raster_type][resolution_id] = output_raster_filename
-
+                   nb_of_raster += 1
+                   
                    # Run all commandline
                    if step1 != '':
-                       print(step1)
-                       #if subprocess.call(step1, shell=True) != 0:
-                       #    print("fail to run "+ step1)
-                       #    return raster_file_name_type
+                       if self.verbose:
+                           print(step1)
+                          # if subprocess.call(step1, shell=True) != 0:
+                          #     print("fail to run "+ step1)
+                          #     return raster_file_name_type
+                       #else:    
+                       #    stout='stdout=None'   
+                       if not self.dry_run:
+                           if subprocess.call(step1,  shell=True) != 0:
+                               print("fail to run "+ step1)
+                               return raster_file_name_type 
                    if step2 != '':
-                       print(step2)
-                       #if subprocess.call(step2, shell=True) != 0:
-                       #    print("fail to run "+ step2)
-                       #    return raster_file_name_type
+                       if self.verbose:
+                           print(step2)
+                       if not self.dry_run:
+                           if subprocess.call(step2,  shell=True) != 0:
+                               print("fail to run "+ step2)
+                               return raster_file_name_type 
                    if step3 != '':
-                       print(step3)
-                       #if subprocess.call(step3, shell=True) != 0:
-                       #    print("fail to run "+ step3)
-                       #    return raster_file_name_type                                             
-
+                       if self.verbose:
+                           print(step3)
+                       if not self.dry_run:
+                           if subprocess.call(step3,  shell=True) != 0:
+                               print("fail to run "+ step3)
+                               return raster_file_name_type                                             
+                   if step4 != '':
+                       if self.verbose:
+                           print(step4)
+                       if not self.dry_run:
+                           if subprocess.call(step4,  shell=True) != 0:
+                               print("fail to run "+ step4)
+                               return raster_file_name_type 
 
         #Now we can load in database
+        i=0
         for raster_type in ['depth', 'density', 'mean', 'stddev']:
             resolution_id = 0
             for resolution in resolutions:
+                
                 resolution_id += 1
-                #Raster2pgsql( raster_dict[raster_type][resolution_id], 
-                #                                reader.tablename,
-                #                                reader.filename,  
-                #                                reader.id, 
-                #                                reader.date, 
-                #                                reader.resolution, 
-                #                                True).run()
-                print("raster_dict[raster_type][resolution_id]=%s \n tablename=%s \n filename=%s \n id=%s \n date=%s \n resolution=%s" %( raster_dict[raster_type][resolution_id], reader.tablename, reader.filename,reader.id,reader.date,reader.resolution))
+                #if self.verbose:
+                if raster_dict[raster_type][resolution_id] != '':
+                    i += 1
+                    print ("Load %s of %s" % (i, nb_of_raster) )
+
+                    r2pg = Raster2pgsql( raster_dict[raster_type][resolution_id], 
+                                                reader.tablename,
+                                                reader.filename,  
+                                                reader.id, 
+                                                reader.date, 
+                                                resolution,
+                                                raster_prefix + "_" + raster_type + ".tiff", 
+                                                self.verbose,
+                                                self.dry_run).run()
+                    
+                    if not r2pg:
+                        return raster_prefix + "_" + raster_type + ".tiff"
+
+                        
+                    #print("raster_dict[raster_type][resolution_id]=%s \n tablename=%s \n filename=%s \n id=%s \n date=%s \n resolution=%s" % ( 
+                    #                  raster_dict[raster_type][resolution_id], 
+                    #                  reader.tablename, 
+                    #                  reader.filename,
+                    #                  reader.id,
+                    #                  reader.date,
+                    #                  reader.resolution))
+        
+        
+        #  we need to flush all tmp file of this object
+        self.clearTmp()
         
         return "SUCCESS"
         

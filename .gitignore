@@ -9,6 +9,7 @@ __pycache__/
 *.shx
 *.prj
 *.dbf
+*.log
 
 # C extensions
 *.so
