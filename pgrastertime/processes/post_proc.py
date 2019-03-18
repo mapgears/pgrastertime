@@ -10,7 +10,7 @@ import sys, os, re
 
 class PostprocSQL:
 
-    def __init__(self, sqlfiles, tablename, rasterfile=None, show_result=False,verbose=False):
+    def __init__(self, sqlfiles, tablename, rasterfile, show_result=False,verbose=False):
         self.sqlfiles = sqlfiles
         self.tablename = tablename
         self.rasterfile = rasterfile

@@ -1,5 +1,5 @@
 --Managing metadata
-SELECT dfo_metadata('pgrastertime');
+SELECT dfo_metadata('pgrastertime','rasterfile');
 
 --Calculate tiles extents at all resolutions.
 SELECT dfo_calculate_tile_extents('pgrastertime','rasterfile');

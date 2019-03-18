@@ -46,12 +46,21 @@ class Raster2pgsql:
                             self.rasterfile)
  
         ## if raster file upload w/ success, we update some metadata in DFO model
-        sql = "UPDATE " + self.tablename + " set filename = '" + \
-                          self.source_tiff_file.split("/")[-1]+"', tile_id="+str(self.tile_id)+",resolution = " + \
-                          str(self.resolution)+", sys_period=tstzrange('"+str(self.date) + \
-                          "', NULL) where filename = '"+ self.rasterfile.split("/")[-1] + \
-                          "' and resolution is null"
- 
+        #sql = "UPDATE " + self.tablename + " set filename = '" + \
+        #                  self.source_tiff_file.split("/")[-1]+"', tile_id="+str(self.tile_id)+",resolution = " + \
+        #                  str(self.resolution)+", sys_period=tstzrange('"+str(self.date) + \
+        #                  "', NULL) where filename = '"+ self.rasterfile.split("/")[-1] + \
+        #                  "' and resolution is null"
+                          
+        sql = "UPDATE %s SET filename = '%s', tile_id=%s,resolution = %s, sys_period=tstzrange('%s', NULL) " \
+              "WHERE filename = '%s' AND resolution IS NULL" % (
+                       self.tablename,
+                       self.source_tiff_file.split("/")[-1],
+                       str(self.tile_id),
+                       str(self.resolution),
+                       str(self.date),
+                       self.rasterfile.split("/")[-1])   
+                           
         if self.verbose:
             print(cmd_ras2pg)
             print(cmd_psql)

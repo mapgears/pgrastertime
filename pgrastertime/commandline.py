@@ -177,13 +177,17 @@ def main():
             # Print result in logfile
             log_date = date_started.replace(" ","_").replace(":","-").split(".", 1)[0]
             loggingfile = ("pgrastertime_%s.log" % log_date)
-                
+            logfile = open(loggingfile, "a")
+            logfile.write("\n\n==== pgRastertime log file\n")
+            logfile.close
             for file in os.listdir(args.reader):
                 if (os.path.splitext(file)[-1].lower() == '.xml'):
-                    print ("extension:" + os.path.splitext(file)[-1].lower())
                     nb += 1
-                    step = "\n Process file %d of %d ..." % (nb,xmlCounter)
-                    print(step)
+                    step = "\n--- %s : %s (%d of %d)" % (
+                            str(datetime.now()).split(".", 1)[0],
+                            file, 
+                            nb, 
+                            xmlCounter)
                     logfile = open(loggingfile, "a")  
                     logfile.write(step)
                     logfile.close
@@ -199,41 +203,41 @@ def main():
                         ns += 1
                 
                 
-                
+            #  add some important information about this run    
             logfile = open(loggingfile, "a")
-            logfile.write("\n\n==== pgRastertime log file...\n")
+            logfile.write("\n\n==== Parameters\n")
             logfile.write("Param : Target table -> %s \n" % args.tablename)
             logfile.write("Param : Source directory -> %s \n" % args.reader)
             logfile.write("Param : Force -> %s \n" % str(args.force))
             logfile.write("Param : Post process -> %s \n" % args.sqlfiles)
-            logfile.write("====\n")
-            logfile.write("Import Started: %s \n" % date_started.split(".", 1)[0])
-            logfile.write("Import Ended: %s \n" % str(datetime.now()).split(".", 1)[0])
+            logfile.write("==== Result\n")
+            logfile.write("Import Started : %s \n" % date_started.split(".", 1)[0])
+            logfile.write("Import Ended : %s \n" % str(datetime.now()).split(".", 1)[0])
             logfile.write("Number of XML file to process : %d \n" % xmlCounter)
             logfile.write("Number of invalide XML file or fail porcess : %d \n" % er)
             logfile.write("Execution took %s seconds to process \n" % str((time.time() - start_time)).split(".", 1)[0])
-                
+            
+            # Only if we have corrupt object
             if len(error_list):
-                logfile.write("\n==== Invalid or corrupt files list:")
+                logfile.write("\n==== Invalid or corrupt files list:\n")
                 logfile.write("\n".join(error_list))
-                
+            else:
+                logfile.write("\n==== No Invalid files")
             # pintf and close
             logfile.close
-                
+            
+            # we print to screen to help user    
             with open(loggingfile, "r") as logfile:
                 for line in logfile:
-                    print(line)
+                    print(line.replace("\n",""))
                 logfile.close
 
         elif os.path.isfile(args.reader):
-            # user specify a file instead of a folder to process
-            # Import all raster files link to the XML object
-            #XMLRastersObject(args.reader,
-            #                 args.tablename,
-            #                 args.force,
-            #                 args.sqlfiles,
-            #                 args.verbose).importRasters()
+            # We will log how much time it will take
+            start_time = time.time()
+            date_started = str(datetime.now())
             
+            # resample the file:
             XML2RastersResampling(args.reader,
                              args.tablename,
                              args.force,
@@ -241,4 +245,12 @@ def main():
                              args.verbose,
                              args.dry_run).importRasters()                 
                              
-                             
+            print("\n\n==== Parameters\n")
+            print("Param : Target table -> %s" % args.tablename)
+            print("Param : Source directory -> %s" % args.reader)
+            print("Param : Force -> %s" % str(args.force))
+            print("Param : Post process -> %s" % args.sqlfiles)
+            print("==== Result")
+            print("Import Started : %s" % date_started.split(".", 1)[0])
+            print("Import Ended : %s" % str(datetime.now()).split(".", 1)[0]) 
+            print("Execution took %s minutes to process" % str((time.time() - start_time)/60).split(".", 1)[0])                           

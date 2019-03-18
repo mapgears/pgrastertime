@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION public.dfo_metadata(
 AS $BODY$
 
 	DECLARE
-      rastcol text;
+          rastcol text;
 	  strsql text;
 	BEGIN
 
@@ -25,7 +25,7 @@ AS $BODY$
 	EXECUTE strsql;
 	
 	--Set metadata_id 
- 	strsql = concat('UPDATE ',rastertable, ' set metadata_id = (select objnam from xml_tmp)');
+ 	strsql = concat('UPDATE ',rastertable, ' set metadata_id = (select objnam from xml_tmp) where metadata_id is null');
 	raise debug 'Update metadata_id: % ', strsql;
 	EXECUTE strsql;
 	

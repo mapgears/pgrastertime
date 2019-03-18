@@ -64,7 +64,9 @@ class XML2RastersResampling:
         
         # 2 build SQL and querry
         # NOTE: at this stage, even at the first raster, the table is already created but without any row...
+        
         sql = "SELECT count(*) as cnt FROM %s_metadata WHERE objnam='%s'" % (self.tablename,raster_id)
+        print(sql)
         try:
             r = DBSession().execute(sql).fetchone()
             if r[0] == 0:
@@ -100,6 +102,16 @@ class XML2RastersResampling:
         
             print("All raster finded! Importing rasters of " + self.xml_filename)
             
+            # We need to insert the Metadata first in database.  We will use some data in postprocess
+            if not (self.insertXML(self.xml_filename)):
+                error = "Fail to insert XML metadata in database"
+                print(error)
+                return error
+            else:
+                if self.verbose:
+                    print("Insert XML metadata in metadata table successfully!")
+            
+            
             # OK resample all raster for all resolutions
             self.ImportXmlObject(raster_prefix)
             
@@ -114,15 +126,6 @@ class XML2RastersResampling:
                 head, tail = os.path.split(raster_prefix)
                 PostprocSQL(self.sqlfiles, self.tablename, tail, False, self.verbose).execute()
                 spinner.stop()
-         
-            # OK we can insert Metadata in database
-            if not (self.insertXML(self.xml_filename)):
-                error = "Fail to insert XML metadata in database"
-                print(error)
-                return error
-            else:
-                if self.verbose:
-                    print("Insert XML metadata in metadata table successfully!")
         
         else:
             error = "ERROR source file missing for " + self.xml_filename
@@ -239,13 +242,13 @@ class XML2RastersResampling:
 
                        if raster_type == 'mean':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
-                           tmp_step1 = tempfile.NamedTemporaryFile().name + ".tiff"
-                           step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
+                           tmp_step1 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_step1.tiff"
+                           step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['mean'][resolution_id-1],
                                           "A*B",
                                           tmp_step1)
-                           tmp_step2 = tempfile.NamedTemporaryFile().name + ".tiff"   
+                           tmp_step2 = tempfile.NamedTemporaryFile().name + "_" + resolution + "_step2.tiff"   
                            step2 = self.getGDALcmd(reader.gdalwarp_path, 
                                              tmp_step1,
                                              tmp_step2,
@@ -261,9 +264,8 @@ class XML2RastersResampling:
                            #                 resolutions[i - 2],
                            #                  'near')                   
                            
-                           tmp_step4 = tempfile.NamedTemporaryFile().name + ".tiff"
                            #gdal_calc -A input.tif --outfile=empty.tif --calc "A*0" --NoDataValue=0
-                           step4 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
+                           step3 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           tmp_step2,
                                           raster_dict['density'][resolution_id],
                                           "A/B",
@@ -272,10 +274,10 @@ class XML2RastersResampling:
                        if raster_type == 'stddev':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
                            tmp_step1 = tempfile.NamedTemporaryFile().name + ".tiff"
-                           step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
+                           step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['stddev'][resolution_id-1],
-                                          "(A-1)*B",
+                                          "(A-1)*(B*B)",
                                           tmp_step1)
                            
                            tmp_step2 = tempfile.NamedTemporaryFile().name + ".tiff"   
@@ -284,7 +286,7 @@ class XML2RastersResampling:
                                              tmp_step2,
                                              resolution,
                                              'sum')  
-                           step3 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s' --NoDataValue=0 --type='Float64'" % (
+                           step3 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           tmp_step2,
                                           raster_dict['density'][resolution_id],
                                           "sqrt(A/(B-4))",
