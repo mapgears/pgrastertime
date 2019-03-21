@@ -36,7 +36,6 @@ pipenv sync
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
 pipenv run pip install "GDAL<=$(gdal-config --version)"
-
 ```
 
 ## Database
@@ -85,6 +84,45 @@ alembic -c local.ini upgrade head
 ```
 pipenv shell
 pgrastertime -h
+usage: pgrastertime [-h] [--config config_file] --tablename TABLENAME
+                    [--sqlfiles SQLFILES] [--dataset DATASET]
+                    [--reader READER]
+                    [--processing {load,xml,deploy,volume,sedimentation,validate}]
+                    [--output OUTPUT] [--output-format {gtiff,pg}]
+                    [--param [PARAM]] [--verbose] [--force] [--dry-run]
+                    [--reset-data]
+
+Loads raster data in Postgresql database with pgRaster extension, that can be
+used for complex analytics. Temporal raster file will be added to a master
+history table based on a time component.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config config_file, -c config_file
+                        .ini configuration file
+  --tablename TABLENAME, -t TABLENAME
+                        Target raster table name in Postgresql
+  --sqlfiles SQLFILES, -s SQLFILES
+                        Custom SQL files script to process, separeted by
+                        commas
+  --dataset DATASET, -d DATASET
+                        Input Dataset used as an option for processing
+                        (shapefiles)
+  --reader READER, -r READER
+                        Reader driver options
+  --processing {load,xml,deploy,volume,sedimentation,validate}, -p {load,xml,deploy,volume,sedimentation,validate}
+                        Processing option
+  --output OUTPUT, -o OUTPUT
+                        Output format shapefiles or PostGIS table
+  --output-format {gtiff,pg}, -of {gtiff,pg}
+                        Output format Geotiff or PostGIS table
+  --param [PARAM], -m [PARAM]
+                        Option(s) input
+  --verbose, -v         Verbose
+  --force, -f, --force-overwrite
+                        Force overwrite of the historical data
+  --dry-run, -x         Force overwrite of the historical data
+  --reset-data          Erase all historical intersecting with new data
 ```
 
 The `local.ini` is the default configuration file.  You can have multiple configuration file and 
@@ -92,6 +130,11 @@ can use `-c` flag to use a different one.
 
 ```
 pgrastertime -c myconf_dev.ini -r ./datatest/raster.tif -p load
+```
+
+*NOTE:* When use GDAL with path, add this environment variable
+```
+export GDAL_DATA=/usr/share/gdal/2.2/
 ```
 
 ## Example

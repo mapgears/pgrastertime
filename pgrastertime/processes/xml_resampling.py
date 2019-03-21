@@ -330,7 +330,13 @@ class XML2RastersResampling:
                            if subprocess.call(step4,  shell=True) != 0:
                                print("fail to run "+ step4)
                                return raster_file_name_type 
-
+               
+               ## if float(resolution) >= float(reader.resolution):
+               else:
+                   # we need to store None value
+                   raster_dict[raster_type][resolution_id] = 'None'
+               
+               
         #Now we can load in database
         i=0
         for raster_type in ['depth', 'density', 'mean', 'stddev']:
@@ -339,7 +345,7 @@ class XML2RastersResampling:
                 
                 resolution_id += 1
                 #if self.verbose:
-                if raster_dict[raster_type][resolution_id] != '':
+                if raster_dict[raster_type][resolution_id] != 'None':
                     i += 1
                     print ("Load %s of %s" % (i, nb_of_raster) )
 

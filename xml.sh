@@ -39,12 +39,3 @@ echo "INSERT INTO $2_metadata
   sursso text PATH  'Attribute[@name = \"sursso\"]/Value',
   uidcre text PATH  'Attribute[@name = \"uidcre\"]/Value');
 ">>ins.sql
-
-echo "TRUNCATE xml_tmp;
-INSERT INTO xml_tmp(objnam)
-  SELECT xmltable.*
-    FROM metadatatemp,
-      XMLTABLE ('//BDB_Simple_Attributes' PASSING objectXml
-        COLUMNS
-	  OBJNAM text PATH  'Attribute[@name = \"OBJNAM\"]/Value' );
-">>ins.sql
