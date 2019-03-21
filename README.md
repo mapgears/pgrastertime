@@ -121,7 +121,7 @@ optional arguments:
   --verbose, -v         Verbose
   --force, -f, --force-overwrite
                         Force overwrite of the historical data
-  --dry-run, -x         Force overwrite of the historical data
+  --dry-run, -x         Run without process data and print command line and querries
   --reset-data          Erase all historical intersecting with new data
 ```
 
