@@ -373,7 +373,7 @@ class XML2RastersResampling:
         
         
         #  we need to flush all tmp file of this object
-        self.clearTmp()
+#        self.clearTmp()
         
         return "SUCCESS"
         

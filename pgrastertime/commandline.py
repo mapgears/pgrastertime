@@ -77,7 +77,7 @@ def parse_arguments():
     parser.add_argument(
         '--dry-run', '-x',
         action='store_true',
-        help="Force overwrite of the historical data"
+        help="Run without process data and print command lines and queries"
     )
     parser.add_argument(
         '--reset-data',
