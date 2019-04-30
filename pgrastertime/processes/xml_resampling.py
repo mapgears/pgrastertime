@@ -204,7 +204,7 @@ class XML2RastersResampling:
                    
                    # we will keep a sequential number for all resolution, 1, 2, 3, 4, 5 ...
                    resolution_id += 1
-                   step1=step2=step3=step4=''
+                   step1=step2=step2a=step2b=step3=step4=''
                    
                     ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling                   
                    if resolution_id == 1:
@@ -242,13 +242,13 @@ class XML2RastersResampling:
 
                        if raster_type == 'mean':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
-                           tmp_step1 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_step1.tiff"
+                           tmp_step1 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_mean_step1.tiff"
                            step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['mean'][resolution_id-1],
-                                          "A*B",
+                                          "nan_to_num(multiply(A,B))", # "A*B",
                                           tmp_step1)
-                           tmp_step2 = tempfile.NamedTemporaryFile().name + "_" + resolution + "_step2.tiff"   
+                           tmp_step2 = tempfile.NamedTemporaryFile().name + "_" + resolution + "_mean_step2.tiff"   
                            step2 = self.getGDALcmd(reader.gdalwarp_path, 
                                              tmp_step1,
                                              tmp_step2,
@@ -265,32 +265,49 @@ class XML2RastersResampling:
                            #                  'near')                   
                            
                            #gdal_calc -A input.tif --outfile=empty.tif --calc "A*0" --NoDataValue=0
-                           step3 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
+                           step3 = "python gdal_calc.py --overwrite --co='COMPRESS=DEFLATE' -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           tmp_step2,
                                           raster_dict['density'][resolution_id],
-                                          "A/B",
+                                          "true_divide(A,B)",#  "A/B",
                                           output_raster_filename)
  
                        if raster_type == 'stddev':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
-                           tmp_step1 = tempfile.NamedTemporaryFile().name + ".tiff"
+                           tmp_step1 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step1.tiff"
                            step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['stddev'][resolution_id-1],
-                                          "(A-1)*(B*B)",
+                                          "nan_to_num((A-1)*(B*B))",
                                           tmp_step1)
                            
-                           tmp_step2 = tempfile.NamedTemporaryFile().name + ".tiff"   
+                           tmp_step2 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step2.tiff"   
                            step2 = self.getGDALcmd(reader.gdalwarp_path, 
                                              tmp_step1,
                                              tmp_step2,
                                              resolution,
                                              'sum')  
-                           step3 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
-                                          tmp_step2,
-                                          raster_dict['density'][resolution_id],
-                                          "sqrt(A/(B-4))",
-                                          output_raster_filename)
+                           #reclass 1 - 0
+                           tmp_step2a = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step2a.tiff"
+                           step2a = "python gdal_calc.py --overwrite  --co='COMPRESS=DEFLATE' -A %s --calc='%s' --outfile='%s'" % (
+                                            raster_dict['density'][resolution_id-1],
+                                            "1*(A<3.4028234663852886e+38)",
+                                            tmp_step2a)
+
+                           tmp_step2b = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step2b.tiff"
+                           step2b = self.getGDALcmd(reader.gdalwarp_path,
+                                                   tmp_step2a,
+                                                   tmp_step2b,
+                                                   resolution,
+                                                   'sum')
+
+                          # step3 = "python gdal_calc.py --overwrite --co='COMPRESS=DEFLATE'  -A %s -B %s --calc='%s' --outfile='%s'" % (
+                           step3 = "python gdal_calc.py --overwrite --co='COMPRESS=DEFLATE'  -A %s -B %s -C %s --calc='%s' --outfile='%s'" % (
+                                        tmp_step2,
+                                        raster_dict['density'][resolution_id], 
+                                        tmp_step2b,
+                                        "nan_to_num(sqrt((A/(B-C))))", 
+                                        output_raster_filename)
+                                  # "sqrt(absolute(A/(B-4)))",
                    
                    # we keep the file name for loading step
                    raster_dict[raster_type][resolution_id] = output_raster_filename
@@ -316,6 +333,20 @@ class XML2RastersResampling:
                            if subprocess.call(step2,  shell=True) != 0:
                                print("fail to run "+ step2)
                                return raster_file_name_type 
+                   if step2a != '':
+                       if self.verbose:
+                          print(step2a)
+                       if not self.dry_run:
+                           if subprocess.call(step2a,  shell=True) != 0:
+                               print("fail to run "+ step2a)
+                               return raster_file_name_type
+                   if step2b != '':
+                        if self.verbose:
+                             print(step2b)
+                        if not self.dry_run:
+                            if subprocess.call(step2b,  shell=True) != 0:
+                                print("fail to run "+ step2b)
+                                return raster_file_name_type
                    if step3 != '':
                        if self.verbose:
                            print(step3)
@@ -373,7 +404,7 @@ class XML2RastersResampling:
         
         
         #  we need to flush all tmp file of this object
-#        self.clearTmp()
+        self.clearTmp()
         
         return "SUCCESS"
         
