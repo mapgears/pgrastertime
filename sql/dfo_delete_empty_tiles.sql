@@ -1,5 +1,5 @@
 
-CREATE OR REPLACE FUNCTION public.dfo_delete_empty_tiles_(
+CREATE OR REPLACE FUNCTION public.dfo_delete_empty_tiles(
 	rastertable text,
 	filename text)
     RETURNS void

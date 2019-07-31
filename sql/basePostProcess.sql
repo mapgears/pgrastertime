@@ -1,5 +1,5 @@
---Managing metadata
-SELECT dfo_metadata('pgrastertime','rasterfile');
+--Delete empty times
+SELECT dfo_delete_empty_tiles('pgrastertime','rasterfile');
 
 --Calculate tiles extents at all resolutions.
 SELECT dfo_calculate_tile_extents('pgrastertime','rasterfile');
@@ -15,4 +15,4 @@ SELECT dfo_calculate_tile_geoms('pgrastertime', 0.25,'rasterfile');
 
 
 -- Merge bands in master table
---SELECT dfo_merge_bands('pgrastertime','rasterfile');
+SELECT dfo_merge_bands('pgrastertime','rasterfile');
