@@ -147,14 +147,14 @@ First iteration of pgRastertime was designed to import your raster data in a pos
 edit your local.ini file to change your postgresql connection info, local path and postprocess file. 
 
 ```
-pgrastertime -t testtable -r ./data/2018_0250_depth.tiff -p load
+pgrastertime -t testtable -r ./data/18g063330911_0250.object.xml -p load
 ```
 
 A specific driver was added for a specific raster format define by an XML file. You can create your own 
 driver in `process` folder.  As example, `xml_import.py` driver alows to import files link to a specific XML object file.
 
 ```
-pgrastertime -t testtable -r ./data/2018_0250.object.xml -p xml
+pgrastertime -t testtable -r ./data/18g063330911_0250.object.xml -p xml
 ```
 
 You can add post process SQL script(s) to the command line (can be multiple script separated by commas).  
@@ -163,6 +163,14 @@ name and the pgrastertime script will find and replace them with your target tab
 
 ```
 pgrastertime -s  ./sql/basePostProcess.sql -t testtable -f -r ./data/ -p xml
+
+if secteur_sondage (dfo) is loaded in db we can use postprocess.
+pgrastertime -s  ./sql/postprocess.sql -t testtable -f -r ./data/ -p xml
+
+To validate postprocess
+select metadata_id,resolution , st_scalex(raster),st_area(tile_geom) ,filename ,st_numbands(raster) 
+from soundingue  ;
+
 ```
 
  * The force `-f` optional flag is used to force overwrite the target table.  When force is not use and `-r` is a directory, all validation is made to import ONLY raster that is not already processed.  This check is made through the metadata target raster table.
@@ -173,6 +181,10 @@ script for your needed).
 
 ```
 pgrastertime -p deploy -t testtable
+
+sql validation
+select count(*) from  soundings_4m; should be greater than 0
+select count(*) from  soundings_error; should be 0
 ```
 
 Validation script can be use and updated for your need.
