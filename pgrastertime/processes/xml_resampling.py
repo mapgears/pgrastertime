@@ -156,7 +156,7 @@ class XML2RastersResampling:
         else:
             size = ""
              
-        cmd =  "%sgdalwarp -overwrite -t_srs EPSG:3979 -co COMPRESS=DEFLATE -tap%s -tr %s %s -r %s %s %s" % (
+        cmd =  "%sgdalwarp -overwrite -t_srs EPSG:3979 -co COMPRESS=DEFLATE -tap %s -tr %s %s -r %s %s %s" % (
                      gdalwarp_path,
                      size,
                      resolution,
@@ -196,34 +196,25 @@ class XML2RastersResampling:
                                      True, 
                                      '/home/srvlocadm/gdal-2.4.0/apps/',
                                      raster_type)
-
-               # start to process from initial resolution of the raster.  It can be 25cm ou 2.5m               
+               # start at the  nearest resolution                
                if float(resolution) >= float(reader.resolution):
                    
-                   output_raster_filename = reader.get_file(resolution)
-                   
+                   output_raster_filename = tempfile.NamedTemporaryFile().name +  "_" + resolution + ".tiff" #reader.get_file(resolution)
                    # we will keep a sequential number for all resolution, 1, 2, 3, 4, 5 ...
                    resolution_id += 1
                    step1=step2=step2a=step2b=step3=step4=''
                    
-                    ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling                   
+                   ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling                   
                    if resolution_id == 1:
                        # initial warp for reprojection.  We use nearest resample because it's the one
-                       # that has less effect on the source pixel rotation/translation
-                       # see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
-                       
-                       # if we're in 2.5 roslution be aware to manage it
-                       if reader.resolution == 2.5:
-                           init_res = 2.5 
-                       else:
-                           init_res = resolution
-                           
+                       # that has less effect on the source pixel rotation/translation mainly used to align  pixels  (-tap)
+                       # see http://10.208.34.178/projects/wis-sivn/wiki/Resamplingi
+                       #the use of near will  cause data loss on raster for witch the  native resolution is not one of the predefined resolution. 
                        step1 = self.getGDALcmd(reader.gdalwarp_path, 
                                              raster_file_name_type,
                                              output_raster_filename,
-                                             init_res,
+                                             resolution,
                                              'near')
-                   
                    else:
                         ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
                        if raster_type == 'depth':
@@ -232,7 +223,7 @@ class XML2RastersResampling:
                                              output_raster_filename,
                                              resolution,
                                              'max')
-                       
+                             
                        if raster_type == 'density':
                             step1 = self.getGDALcmd(reader.gdalwarp_path, 
                                              raster_dict['density'][resolution_id-1],
@@ -373,7 +364,7 @@ class XML2RastersResampling:
         for raster_type in ['depth', 'density', 'mean', 'stddev']:
             resolution_id = 0
             for resolution in resolutions:
-                
+              if float(resolution) >= float(reader.resolution):   
                 resolution_id += 1
                 #if self.verbose:
                 if raster_dict[raster_type][resolution_id] != 'None':
