@@ -1,9 +1,6 @@
--- FUNCTION: public.dfo_merge_bands(text)
-
--- DROP FUNCTION public.dfo_merge_bands(text);
-
 CREATE OR REPLACE FUNCTION public.dfo_merge_bands(
-	rastertable text)
+	rastertable text,
+	filename text)
     RETURNS void
     LANGUAGE 'plpgsql'
 
@@ -28,11 +25,16 @@ AS $BODY$
 						(SELECT d.id, (ST_AddBand(d.',rastcol,' , o.',rastcol,' ,1)) as bnd
 						 FROM ',rastertable,' d join  ',rastertable,' o ON
 								ST_Equals(d.tile_extent,o.tile_extent) 
-								AND d.filename LIKE ''%depth.tiff''  
-								AND o.filename  LIKE ''%',rastType,'.tiff'' 
+								AND d.filename LIKE ',quote_literal(filename||'%depth%'),' 
+								AND o.filename  LIKE ',quote_literal(filename||'%'||rastType||'.tiff'),' 
 								AND o.resolution=d.resolution) sr
 						 WHERE sr.id=u.id');
     	raise notice '%  ',strsql;
+		EXECUTE strsql;
+		
+		--delte  'rastType' band from table
+		strsql = concat('DELETE FROM  ',rastertable,' WHERE filename  LIKE ',quote_literal(filename||'%'||rastType||'.tiff'));
+		raise notice '%  ',strsql;
 		EXECUTE strsql;
 	END LOOP;
 
@@ -43,4 +45,3 @@ AS $BODY$
 END;
 
 $BODY$;
- 
