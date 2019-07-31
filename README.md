@@ -143,14 +143,14 @@ First iteration of pgRastertime was designed to import your raster data in a pos
 edit your local.ini file to change your postgresql connection info, local path and postprocess file. 
 
 ```
-pgrastertime -t testtable -r ./datatest/raster.tif -p load
+pgrastertime -t testtable -r ./data/2018_0250_depth.tiff -p load
 ```
 
 A specific driver was added for a specific raster format define by an XML file. You can create your own 
 driver in `process` folder.  As example, `xml_import.py` driver alows to import files link to a specific XML object file.
 
 ```
-pgrastertime -t testtable -r ./datatest/18g063120831_0025.object.xml -p xml
+pgrastertime -t testtable -r ./data/2018_0250.object.xml -p xml
 ```
 
 You can add post process SQL script(s) to the command line (can be multiple script separated by commas).  
@@ -158,7 +158,7 @@ Postprocess script (-s option) are execute after each raster updated in table.  
 name and the pgrastertime script will find and replace them with your target table name of `-t` flag. 
 
 ```
-pgrastertime -s ./sql/postprocess.sql -t testtable -f -r ../data/data_test/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t testtable -f -r ./data/ -p xml
 ```
 
  * The force `-f` optional flag is used to force overwrite the target table.  When force is not use and `-r` is a directory, all validation is made to import ONLY raster that is not already processed.  This check is made through the metadata target raster table.
