@@ -129,7 +129,7 @@ The `local.ini` is the default configuration file.  You can have multiple config
 can use `-c` flag to use a different one.
 
 ```
-pgrastertime -c myconf_dev.ini -r ./datatest/raster.tif -p load
+pgrastertime -c myconf_dev.ini -r ./data/ -p xml
 ```
 
 *NOTE:* When use GDAL with path, add this environment variable
