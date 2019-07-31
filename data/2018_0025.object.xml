@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BDB_Simple_Attributes>
+  <Attribute name="DRVAL1">
+    <Value>11.141574</Value>
+  </Attribute>
+  <Attribute name="DRVAL2">
+    <Value>16.246889</Value>
+  </Attribute>
+  <Attribute name="DUNITS">
+    <Value>metres</Value>
+  </Attribute>
+  <Attribute name="OBJNAM">
+    <Value>18c121114401</Value>
+  </Attribute>
+  <Attribute name="RECDAT">
+    <Value>20180524</Value>
+  </Attribute>
+  <Attribute name="SUREND">
+    <Value>20180524T170911</Value>
+  </Attribute>
+  <Attribute name="SURSTA">
+    <Value>20180524T163854</Value>
+  </Attribute>
+  <Attribute name="SURTYP">
+    <Value>"Après débâcles / After Ice Breakups"</Value>
+  </Attribute>
+  <Attribute name="TECSOU">
+    <Value>"found by multi-beam"</Value>
+  </Attribute>
+  <Attribute name="VERDAT">
+    <Value>Low Water</Value>
+  </Attribute>
+  <Attribute name="cretim">
+    <Value>20180524 192119.069</Value>
+  </Attribute>
+  <Attribute name="hcosys">
+    <Value>PROJCS["NAD83(CSRS) / MTM zone 8",
+    GEOGCS["NAD83(CSRS)",
+        DATUM["NAD83 Canadian Spatial Reference System",
+            SPHEROID["GRS 1980",6378137,298.2572221010041,
+                AUTHORITY["EPSG","7019"]],
+            AUTHORITY["EPSG","6140"]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree (supplier to define representation)",0.0174532925199433,
+            AUTHORITY["EPSG","9122"]],
+        AUTHORITY["EPSG","4617"]],
+    PROJECTION["Transverse_Mercator",
+        AUTHORITY["EPSG","17708"]],
+    PARAMETER["latitude_of_origin",0],
+    PARAMETER["central_meridian",-73.5],
+    PARAMETER["scale_factor",0.9999],
+    PARAMETER["false_easting",304800],
+    PARAMETER["false_northing",0],
+    UNIT["metre",1,
+        AUTHORITY["EPSG","9001"]],
+    AUTHORITY["EPSG","2950"]]</Value>
+  </Attribute>
+  <Attribute name="idprnt">
+    <Value>7000000</Value>
+  </Attribute>
+  <Attribute name="modtim">
+    <Value>20180524 192124.685</Value>
+  </Attribute>
+  <Attribute name="planam">
+    <Value>"Morillon R2Sonic"</Value>
+  </Attribute>
+  <Attribute name="srcfil">
+    <Value>18c121114401.csar</Value>
+  </Attribute>
+  <Attribute name="srfcat">
+    <Value>Standard</Value>
+  </Attribute>
+  <Attribute name="srfdsc">
+    <Value>&lt;?xml version="1.0"?&gt;
+&lt;Bathy_Surface_Descriptor&gt;&lt;band name="Density" default_elevation="false" hidden="false" category="0" direction="0" type="6" min_value="4.000" max_value="64.000" unit=""/&gt;&lt;band name="Depth" default_elevation="true" hidden="false" category="0" direction="3" type="0" min_value="-16.247" max_value="-11.142" unit="m"/&gt;&lt;band name="Hypothesis_Count" default_elevation="false" hidden="false" category="0" direction="0" type="6" min_value="1.000" max_value="6.000" unit=""/&gt;&lt;band name="Mean" default_elevation="false" hidden="false" category="0" direction="3" type="0" min_value="-16.245" max_value="-11.140" unit="m"/&gt;&lt;band name="Std_Dev" default_elevation="false" hidden="false" category="0" direction="0" type="0" min_value="0.000" max_value="0.193" unit="m"/&gt;&lt;/Bathy_Surface_Descriptor&gt;
+</Value>
+  </Attribute>
+  <Attribute name="srfres">
+    <Value>0.25</Value>
+  </Attribute>
+  <Attribute name="srftyp">
+    <Value>CSAR Grid (.csar)</Value>
+  </Attribute>
+  <Attribute name="uidcre">
+    <Value>CBU</Value>
+  </Attribute>
+</BDB_Simple_Attributes>
