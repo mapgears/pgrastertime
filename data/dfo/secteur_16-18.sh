@@ -1,0 +1,15 @@
+pgrastertime -s ./sql/postprocess.sql -t sound_18c -f -r ../data/CA/18c/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_18d -f -r ../data/CA/18d/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_18e -f -r ../data/CA/18e/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_18f -f -r ../data/CA/18f/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_18g -f -r ../data/CA/18g/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_17c -f -r ../data/CA/17c/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_17d -f -r ../data/CA/17d/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_17e -f -r ../data/CA/17e/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_17f -f -r ../data/CA/17f/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_17g -f -r ../data/CA/17g/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_16c -f -r ../data/CA/16c/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_16d -f -r ../data/CA/16d/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_16e -f -r ../data/CA/16e/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_16f -f -r ../data/CA/16f/ -p xml
+pgrastertime -s ./sql/postprocess.sql -t sound_16g -f -r ../data/CA/16g/ -p xml

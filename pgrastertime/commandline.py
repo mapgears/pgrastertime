@@ -142,6 +142,8 @@ def main():
     
     # 1. Load Processing Class
     # TODO: Replace this by a factory
+
+    #This option is broken
     if args.processing == 'load':
     
         # 2. Load file with reader options
@@ -155,8 +157,8 @@ def main():
         
         # Finaly, user create some post process SQL to run over loaded table
         # User can have multiple SQL file to run       
-        if self.sqlfiles is not None:
-            print("Post process SQL file: " + self.sqlfiles)
+        if args.sqlfiles != '':
+            print("Post process SQL file: " + args.sqlfiles)
             PostprocSQL(args.sqlfiles,args.tablename).execute()
         
     elif args.processing == 'xml':
