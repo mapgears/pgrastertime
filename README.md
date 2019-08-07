@@ -55,11 +55,11 @@ NOTE: choose your admin password and your database port
 
  * Run the **StackBuilder** utility and install the PostGIS add-on.
 
-NOTE: Chose PostGIS bundle and clic "YES" to all installer question
+NOTE: Chose PostGIS bundle and clic "YES" to all installer questions
 
 3- Install Conda environment
 
-The best way to pgRastertim on Windows is to build a dedicated silo where all needed package will be installed.  For this need we use cross platform Conda packaging management solution.
+The best way to run pgRastertime on Windows is to build a dedicated silo where all needed packages will be installed.  For this reason we use cross platform Conda packaging management solution.
 
  * Install Miniconda
 
@@ -83,14 +83,14 @@ CREATE USER loader WITH PASSWORD 'ChangeMe';
 CREATE DATABASE pgraster WITH OWNER loader ENCODING 'UTF8';
 \q
 psql -h localhost -p 5432 -d pgraster -U loader -c "CREATE EXTENSION postgis;"
-psql -h localhost -p 5432 -U loader -W -d pgraster -U loader -f ./sql/init_exta.sql
+psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/init_exta.sql
 ```
 
 Optional sql files to load to perform wis custom operations.
 
 ```
-psql -h localhost -p 5432 -U loader -W -d pgraster -U loader -f ./sql/wis/dfo_functions.sql
-psql -h localhost -p 5432 -U loader -W -d pgraster -U loader -f ./sql/wis/dfo_all_tables.sql
+psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/wis/dfo_functions.sql
+psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/wis/dfo_all_tables.sql
 ```
 
 
