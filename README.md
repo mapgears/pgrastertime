@@ -12,21 +12,21 @@ will be used to query raster value at a specific time for analysis.
 On Ubuntu, pgRastertime run in a Python virtual environment (pipenv)
 
 ## Python virtual environment
+
 ```
 sudo apt install python3 pip python-pip
 pip install --user pipenv
 pipenv install
 cp development.ini local.ini
 ```
-Edit the local.ini to fit your installation
+Update `local.ini` database connection string
 
-
-## Update dependencies
+Then update dependencies
 
 ```
 pipenv shell
 pipenv sync
-python pgrastertime.py
+python pgrastertime.py ...
 ```
 
 ## Database
@@ -45,36 +45,34 @@ sudo apt-get install postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-2.1-scrip
 
 This installation has been tested on Windows 10
 
-1- Install Postgresql (version 10.9 tested)
+## Install Postgresql 
 
- * Download and install PostgreSQL from EnterpriseDB.
-
-https://www.enterprisedb.com/thank-you-downloading-postgresql?anid=1256722
+Download and install PostgreSQL from EnterpriseDB (version 10.9 tested): https://www.enterprisedb.com/thank-you-downloading-postgresql?anid=1256722
 
 NOTE: choose your admin password and your database port
 
- * Run the **StackBuilder** utility and install the PostGIS add-on.
+Run the **StackBuilder** utility and install the PostGIS add-on.
 
 NOTE: Chose PostGIS bundle and clic "YES" to all installer questions
 
-3- Install Conda environment
+## Conda environment
 
 The best way to run pgRastertime on Windows is to build a dedicated silo where all needed packages will be installed.  For this reason we use cross platform Conda packaging management solution.
 
- * Install Miniconda
-
 Install the latest available Miniconda python 3 version from here :  https://conda.io/en/latest/miniconda.html
+ 
+Open an **Anaconda Prompt Terminal** Windows (from Start menu), clone this repo first then create a new **pgrastertime** conda environment
 
- * Create a "pgratertime" conda environment
-
-Clone this repo first, then:
 
 ```
-cd .\pgrastertime 
+cd .\pgrastertime
+cp development.ini local.ini
 conda create -n pgrastertime python=3.7
 conda activate pgrastertime
 conda install -c conda-forge --file conda-package.lst
 ```
+
+Update `local.ini` database connection string
 
 # Init your database
 
@@ -95,7 +93,6 @@ Optional sql files to load to perform wis custom operations.
 psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/wis/dfo_functions.sql
 psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/wis/dfo_all_tables.sql
 ```
-
 
 # Running pgrastertime
 
