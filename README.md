@@ -29,7 +29,7 @@ pipenv sync
 python pgrastertime.py ...
 ```
 
-## Database
+## Install Postgresql Database
 
 Find your Postgresql and Postgis to install for your Ubuntu LTS version
 
@@ -45,7 +45,7 @@ sudo apt-get install postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-2.1-scrip
 
 This installation has been tested on Windows 10
 
-## Install Postgresql 
+## Install Postgresql Database
 
 Download and install PostgreSQL from EnterpriseDB (version 10.9 tested): https://www.enterprisedb.com/thank-you-downloading-postgresql?anid=1256722
 
