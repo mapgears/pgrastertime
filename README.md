@@ -67,7 +67,10 @@ Install the latest available Miniconda python 3 version from here :  https://con
 
  * Create a "pgratertime" conda environment
 
+Clone this repo first, then:
+
 ```
+cd .\pgrastertime 
 conda create -n pgrastertime python=3.7
 conda activate pgrastertime
 conda install -c conda-forge --file conda-package.lst
