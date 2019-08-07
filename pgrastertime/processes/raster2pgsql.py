@@ -37,8 +37,8 @@ class Raster2pgsql:
         
         # if raster2pgsql run w/ success, we import SQL file in database
         user_param = self.getConParam()
-        cmd_psql = "PGPASSWORD=%s psql -q -p %s -h %s -U %s -d %s -f %s.sql" % (
-                            user_param['pg_pw'],
+        os.environ["PGPASSWORD"] = user_param['pg_pw']
+        cmd_psql = "psql -q -p %s -h %s -U %s -d %s -f %s.sql" % (
                             user_param['pg_port'], 
                             user_param['pg_host'],
                             user_param['pg_user'],

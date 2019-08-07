@@ -31,9 +31,10 @@ class LoadRaster(Process):
                 pg_dbname = CONFIG['app:main'].get('sqlalchemy.url').split('/')[3]
                 pg_pw = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[1]
                 pg_user = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[0]
-                cmd = "PGPASSWORD=" + pg_pw + " psql -q -p " + pg_port + " -h " + pg_host + \
+                cmd = "psql -q -p " + pg_port + " -h " + pg_host + \
                       " -U " + pg_user + " -d " +  pg_dbname + \
                       " -f " + filename + ".sql"
+                os.environ["PGPASSWORD"] = pg_pw    
                 if subprocess.call(cmd, shell=True) == 0:
                 
                     ## if raster file upload w/ success, we update some metadata in DFO model

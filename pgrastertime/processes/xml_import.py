@@ -37,9 +37,9 @@ class XMLRastersObject:
            print("Fail to convert xml to sql...")
            return False
         
-        con_pg = self.getConParam() 
-        cmd = "PGPASSWORD=%s psql -q -h %s -p %s -U %s -d %s -f ins.sql" % (
-                     con_pg['pg_pw'],
+        con_pg = self.getConParam()
+        os.environ["PGPASSWORD"] = con_pg['pg_pw']   
+        cmd = "psql -q -h %s -p %s -U %s -d %s -f ins.sql" % (
                      con_pg['pg_host'],
                      con_pg['pg_port'],
                      con_pg['pg_user'],

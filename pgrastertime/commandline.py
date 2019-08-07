@@ -61,7 +61,7 @@ def parse_arguments():
         help='Output format Geotiff or PostGIS table'
     )
     parser.add_argument(
-        '--param', '-m', nargs='?', action='append',
+        '--param', '-m', nargs='?',default='', action='append',
         help='Option(s) input'
     )
     parser.add_argument(
@@ -198,7 +198,8 @@ def main():
                              args.force,
                              args.sqlfiles,
                              args.verbose,
-                             args.dry_run).importRasters() != "SUCCESS"):
+                             args.dry_run,
+                             args.param).importRasters() != "SUCCESS"):
                         er += 1
                         error_list.append(os.path.join(args.reader, file))
                     else:
@@ -245,7 +246,8 @@ def main():
                              args.force,
                              args.sqlfiles,
                              args.verbose,
-                             args.dry_run).importRasters()                 
+                             args.dry_run,
+                             args.param).importRasters()                 
                              
             print("\n\n==== Parameters\n")
             print("Param : Target table -> %s" % args.tablename)

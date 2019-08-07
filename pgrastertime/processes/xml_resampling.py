@@ -9,17 +9,27 @@ from pgrastertime.processes.raster2pgsql import Raster2pgsql
 from pgrastertime.processes.spinner import Spinner
 from pgrastertime import CONFIG
 import subprocess
-import sys, os, ntpath, tempfile
+import sys, os, ntpath, tempfile, platform
 
 class XML2RastersResampling:
 
-    def __init__(self, xml_filename, tablename, force, sqlfiles, verbose, dry_run):
+    def __init__(self, xml_filename, tablename, force, sqlfiles, verbose, dry_run,userparam=''):
         self.xml_filename = xml_filename
         self.tablename = tablename
         self.force = force
         self.sqlfiles = sqlfiles
         self.verbose = verbose
         self.dry_run = dry_run
+        self.userparam = userparam
+
+    def getParams(self,param):
+        # this process need gdal_path parametre
+        p = ''
+        for i in self.userparam:
+            if i.split("=")[0].lower() == param:
+                p = i.split("=")[1]                                      
+        return p
+
 
     def getConParam(self):
         conDic = {}
@@ -38,14 +48,16 @@ class XML2RastersResampling:
            print("Fail to convert xml to sql...")
            return False
         
-        con_pg = self.getConParam() 
-        cmd = "PGPASSWORD=%s psql -q -h %s -p %s -U %s -d %s -f ins.sql" % (
-                     con_pg['pg_pw'],
+        con_pg = self.getConParam()
+
+
+        os.environ["PGPASSWORD"] = con_pg['pg_pw']
+        cmd = "psql -q -h %s -p %s -U %s -d %s -f ins.sql" % (
                      con_pg['pg_host'],
                      con_pg['pg_port'],
                      con_pg['pg_user'],
                      con_pg['pg_dbname'])
-                     
+            
         if subprocess.call(cmd, shell=True) != 0:
              print("Fail to insert sql in database...")
              return False
@@ -179,7 +191,9 @@ class XML2RastersResampling:
         resolutions = CONFIG['app:main'].get('output.resolutions').split(',')
         raster_dict = self.initRasterFileDict()
         
-        
+        # Check gdal_path param
+        gdal_path =  self.getParams('gdal_path')
+
         #  loop in all raster type
         nb_of_raster = 0
         for raster_type in ['depth', 'density', 'mean', 'stddev']:
@@ -194,7 +208,7 @@ class XML2RastersResampling:
                                      False, 
                                      self.force, 
                                      True, 
-                                     '/home/srvlocadm/gdal-2.4.0/apps/',
+                                     gdal_path,
                                      raster_type)
                # start at the  nearest resolution                
                if float(resolution) >= float(reader.resolution):

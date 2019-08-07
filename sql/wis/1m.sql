@@ -28,9 +28,6 @@ WITH (
 )
 TABLESPACE pg_default;
 
-ALTER TABLE soundings_1m
-    OWNER to stecyr;
-
 -- Index: soundings_1m_lower_sysperiod
 
 -- DROP INDEX soundings_1m_lower_sysperiod;
