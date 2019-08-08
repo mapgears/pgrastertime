@@ -47,7 +47,7 @@ This installation has been tested on Windows 10
 
 ## Install Postgresql Database
 
-Download and install PostgreSQL from EnterpriseDB (version 10.9 tested): https://www.enterprisedb.com/thank-you-downloading-postgresql?anid=1256722
+Download and install PostgreSQL from EnterpriseDB (version 10.9 tested): https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 
 NOTE: choose your admin password and your database port
 
