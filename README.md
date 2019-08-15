@@ -1,11 +1,11 @@
 # pgrastertime
-Script to load and manage PostGIS Raster with a time component. This is used
-to do analysis using raster data on specific data
+Script to load raster file with a time component into Postgresql database with 
+pgRaster extension. Query and analyze raster with SQL allows complex analysis 
+and gives great flexibility.   This tool can help you to process source rasters
+before loading step, with GDAL utility and perform post-process after loading step. 
 
-This script will be used to load raster data in a table called `pgrastertime`.
-All raster added to the database will be added with a time value. This value
-will be used to query raster value at a specific time for analysis.
-
+The script will help to manage temporal information extract from your raster source
+file in tzrange PostgreSQL field type.
 
 # Install on Ubuntu
 
