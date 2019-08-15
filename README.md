@@ -11,41 +11,52 @@ file in tzrange PostgreSQL field type.
 
 On Ubuntu, pgRastertime run in a Python virtual environment (pipenv)
 
+## Install dependencies
+```
+sudo apt install python3 python3-pip python3-venv postgresql postgis gdal-bin python3-gdal build-essential libgdal-dev
+git clone https://github.com/mapgears/pgrastertime
+```
+
 ## Python virtual environment
 
+We need to create a development virtual environment available only for the active user
 ```
-sudo apt install python3 pip python-pip
-pip install --user pipenv
-pipenv install
-cp development.ini local.ini
-```
-Update `local.ini` database connection string
-
-Then update dependencies
-
-```
+cd ./pgrastertime
+echo 'PATH="$HOME/.local/bin/:$PATH"' >>~/.bashrc
+pip3 install --user pipenv
+pip3 install
+export CPLUS_INCLUDE_PATH=/usr/include/gdal
+export C_INCLUDE_PATH=/usr/include/gdal
+pipenv run pip install "GDAL<=$(gdal-config --version)"
 pipenv shell
-pipenv sync
-python pgrastertime.py ...
 ```
 
-## Install Postgresql Database
+## Compile and patch GDAL 2.4  (optional)
 
-Find your Postgresql and Postgis to install for your Ubuntu LTS version
+The dfo driver needs a patched version of GDAL 2.4.  This section explain how to download
+source code, apply patch and compile to run locally a patch version of GDAL.  Within the
+pgrastertime command line, we will be able to point the GDAL path.
 
 ```
-sudo apt-cache search postgresql
-...
-sudo apt-cache search postgis
-...
-sudo apt-get install postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-2.1-scripts
+wget http://download.osgeo.org/gdal/2.4.0/gdal-2.4.0.tar.gz
+tar xzvf gdal-2.4.0.tar.gz
+cd gdal-2.4.0
+patch -i ../pgrastertime/gdal-2.4-resample-sum.patch
+# File to patch: ./alg/gdalwarper.cpp
+# File to patch: ./alg/gdalwarper.h
+# File to patch: ./alg/gdalwarpkernel.cpp
+# File to patch: ./alg/gdalwarpoperation.cpp
+# File to patch: ./apps/gdalwarp_bin.cpp
+# File to patch: ./apps/gdalwarp_lib.cpp
+./configure
+make
 ```
 
 # Install on Windows
 
 This installation has been tested on Windows 10
 
-## Install Postgresql Database
+### Install Postgresql Database
 
 Download and install PostgreSQL from EnterpriseDB (version 10.9 tested): https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 
@@ -55,7 +66,7 @@ Run the **StackBuilder** utility and install the PostGIS add-on.
 
 NOTE: Chose PostGIS bundle and clic "YES" to all installer questions
 
-## Conda environment
+### Conda environment
 
 The best way to run pgRastertime on Windows is to build a dedicated silo where all needed packages will be installed.  For this reason we use cross platform Conda packaging management solution.
 
@@ -72,8 +83,6 @@ conda activate pgrastertime
 conda install -c conda-forge --file conda-package.lst
 ```
 
-Update `local.ini` database connection string
-
 # Init your database
 
 Basic postgresql database init
@@ -86,8 +95,17 @@ CREATE DATABASE pgraster WITH OWNER loader ENCODING 'UTF8';
 psql -h localhost -p 5432 -d pgraster -U loader -c "CREATE EXTENSION postgis;"
 psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/init_exta.sql
 ```
+From pgrastertime directory, copy the `development.ini` file to `local.ini` and 
+edit database connection string for sqlalchemy module:
 
-Optional sql files to load to perform wis custom operations.
+```
+# This DB needs to have the PostGIS Raster extension enabled
+sqlalchemy.url = postgresql://user:password@localhost:5432/pgrastertime
+```
+
+The pgrastertime script will use this connection string to connect PostgreSQL database.
+
+Finally, DFO user will need to run those optional sql files for custom operations.
 
 ```
 psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/wis/dfo_functions.sql
