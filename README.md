@@ -24,7 +24,7 @@ We need to create a development virtual environment available only for the activ
 cd ./pgrastertime
 echo 'PATH="$HOME/.local/bin/:$PATH"' >>~/.bashrc
 pip3 install --user pipenv
-pip3 install
+pipenv install
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
 pipenv run pip install "GDAL<=$(gdal-config --version)"
