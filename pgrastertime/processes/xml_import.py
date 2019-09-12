@@ -30,7 +30,6 @@ class XMLRastersObject:
         return conDic
 
     def insertXML(self, xml_filename):
-        
         #this bash file create ins.sql to run
         cmd = "sh ./xml.sh " + xml_filename + " " + self.tablename 
         if subprocess.call(cmd, shell=True) != 0:
@@ -44,11 +43,11 @@ class XMLRastersObject:
                      con_pg['pg_port'],
                      con_pg['pg_user'],
                      con_pg['pg_dbname'])
-                     
+        print(cmd)             
         if subprocess.call(cmd, shell=True) != 0:
              print("Fail to insert sql in database...")
              return False
-        os.remove("ins.sql")
+        #os.remove("ins.sql")
               
         return True
 

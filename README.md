@@ -24,7 +24,7 @@ We need to create a development virtual environment available only for the activ
 cd ./pgrastertime
 echo 'PATH="$HOME/.local/bin/:$PATH"' >>~/.bashrc
 pip3 install --user pipenv
-pip3 install
+pipenv install
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
 pipenv run pip install "GDAL<=$(gdal-config --version)"
@@ -89,11 +89,12 @@ Basic postgresql database init
 
 ```
 psql -h localhost -p 5432 -U postgres -W
-CREATE USER loader WITH PASSWORD 'ChangeMe';
+CREATE USER loader WITH PASSWORD 'loader';
+ALTER USER loader WITH SUPERUSER;
 CREATE DATABASE pgraster WITH OWNER loader ENCODING 'UTF8';
 \q
-psql -h localhost -p 5432 -d pgraster -U loader -c "CREATE EXTENSION postgis;"
-psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/init_exta.sql
+psql -h localhost -p 5432 -d pgraster -U loader -W -c "CREATE EXTENSION postgis;"
+psql -h localhost -p 5432 -d pgraster -U loader -W -f ./sql/init_exta.sql
 ```
 From pgrastertime directory, copy the `development.ini` file to `local.ini` and 
 edit database connection string for sqlalchemy module:
@@ -115,7 +116,7 @@ psql -h localhost -p 5432 -U loader -W -d pgraster -f ./sql/wis/dfo_all_tables.s
 # Running pgrastertime
 
 ```
-python pgrastertime.py -h
+python3 pgrastertime.py -h
 usage: pgrastertime [-h] [--config config_file] --tablename TABLENAME
                     [--sqlfiles SQLFILES] [--dataset DATASET]
                     [--reader READER]
@@ -161,13 +162,9 @@ The `local.ini` is the default configuration file.  You can have multiple config
 can use `-c` flag to use a different one.
 
 ```
-python pgrastertime.py -c myconf_dev.ini -r ./data/ -p xml
+python3 pgrastertime.py -c myconf_dev.ini -r ./data/ -p xml
 ```
 
-*NOTE:* When use GDAL with path, add this environment variable
-```
-export GDAL_DATA=/usr/share/gdal/2.2/
-```
 
 ## Examples
 
@@ -175,14 +172,14 @@ First iteration of pgRastertime was designed to import your raster data in a pos
 edit your local.ini file to change your postgresql connection info, local path and postprocess file. 
 
 ```
-python pgrastertime.py -t testtable -r ./data/18g063330911_0250.object.xml -p load
+python3 pgrastertime.py -t testtable -r ./data/18g063330911_0250.object.xml -p load
 ```
 
 A specific driver was added for a specific raster format define by an XML file. You can create your own 
 driver in `process` folder.  As example, `xml_import.py` driver alows to import files link to a specific XML object file.
 
 ```
-python pgrastertime.py -t testtable -r ./data/18g063330911_0250.object.xml -p xml
+python3 pgrastertime.py -f -t testtable -r ./data/18g063330911_0250.object.xml -p xml
 ```
 
 You can add post process SQL script(s) to the command line (can be multiple script separated by commas).  
@@ -190,26 +187,29 @@ Postprocess script (-s option) are execute after each raster updated in table.  
 name and the pgrastertime script will find and replace them with your target table name of `-t` flag. 
 
 ```
-python pgrastertime.py -s  ./sql/basePostProcess.sql -t testtable -f -r ./data/ -p xml
-
-if secteur_sondage (dfo) is loaded in db we can use postprocess.
-python pgrastertime.py -s  ./sql/postprocess.sql -t testtable -f -r ./data/ -p xml
-
-To validate postprocess
-select metadata_id,resolution , st_scalex(raster),st_area(tile_geom) ,filename ,st_numbands(raster) 
-from soundingue  ;
-
+python3 pgrastertime.py -s ./sql/basePostProcess.sql -t testtable -f -r ./data/ -p xml
 ```
 
- * The force `-f` optional flag is used to force overwrite the target table.  When force is not use and `-r` is a directory, all validation is made to import ONLY raster that is not already processed.  This check is made through the metadata target raster table.
+if secteur_sondage (dfo) is loaded in db we can use postprocess.
+```
+python3 pgrastertime.py -s  ./sql/postprocess.sql -t testtable -f -r ./data/ -p xml
+```
+To validate postprocess
+```
+select metadata_id,resolution , st_scalex(raster),st_area(tile_geom) ,filename ,st_numbands(raster) from soundingue;
+```
+
+The force `-f` optional flag is used to force overwrite the target table.  When force is not use and `-r` is a directory, all validation is made to import ONLY raster that is not already processed.  This check is made through the metadata target raster table.
 
 You can `deploy` your pgrastertable table ( `-t` flag) to your production table through `./sql/deploy.sql` script (edit this
 script for your needed).  
 
 ```
-python pgrastertime.py -p deploy -t testtable
+python3 pgrastertime.py -p deploy -t testtable
+```
 
-sql validation
+SQL for validation
+```
 select count(*) from  soundings_4m; should be greater than 0
 select count(*) from  soundings_error; should be 0
 ```
@@ -217,19 +217,19 @@ select count(*) from  soundings_error; should be 0
 Validation script can be use and updated for your need.
 
 ```
-python pgrastertime.py -p validate -t datatest
+python3 pgrastertime.py -p validate -t datatest
 ```
 
 This custom sedimentation process need multiple input value add with `-m` flags.  This example output the table processed with a cutome postgresql function to a tif file
 
 ```
-python pgrastertime.py -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22' -m resolution=4 -d ./datatest/secteur.shp -o ./datatest/sm1.tif -of gtiff -v -p sedimentation
+python3 pgrastertime.py -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22' -m resolution=4 -d ./datatest/secteur.shp -o ./datatest/sm1.tif -of gtiff -v -p sedimentation
 ```
 
 In this example, the output is a Postgresql table `my_table`
 
 ```
-python pgrastertime.py -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22' -m resolution=4 -d ./datatest/secteur.shp -o my_table -of pg -v -p sedimentation
+python3 pgrastertime.py -t soundings_4m -m time_start='2017-12-31' -m time_end='2018-10-22' -m resolution=4 -d ./datatest/secteur.shp -o my_table -of pg -v -p sedimentation
 ```
 
 ## Todo list

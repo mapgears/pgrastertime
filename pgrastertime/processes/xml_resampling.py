@@ -25,9 +25,11 @@ class XML2RastersResampling:
     def getParams(self,param):
         # this process need gdal_path parametre
         p = ''
-        for i in self.userparam:
-            if i.split("=")[0].lower() == param:
-                p = i.split("=")[1]                                      
+        #print('self.userparam:'+self.userparam)
+        #for i in self.userparam:
+            #if i.split("=")[0].lower() == param:
+        if self.userparam.split("=")[0].lower() == param:
+            p = self.userparam.split("=")[1]                                      
         return p
 
 
@@ -52,16 +54,16 @@ class XML2RastersResampling:
 
 
         os.environ["PGPASSWORD"] = con_pg['pg_pw']
-        cmd = "psql -q -h %s -p %s -U %s -d %s -f ins.sql" % (
+        cmd = "psql -q -h %s -p %s -U %s -d %s -f %s.sql" % (
                      con_pg['pg_host'],
                      con_pg['pg_port'],
                      con_pg['pg_user'],
-                     con_pg['pg_dbname'])
-            
+                     con_pg['pg_dbname'],
+                     self.tablename)
         if subprocess.call(cmd, shell=True) != 0:
              print("Fail to insert sql in database...")
              return False
-        os.remove("ins.sql")
+        os.remove( self.tablename + ".sql")
               
         return True
 
@@ -78,7 +80,6 @@ class XML2RastersResampling:
         # NOTE: at this stage, even at the first raster, the table is already created but without any row...
         
         sql = "SELECT count(*) as cnt FROM %s_metadata WHERE objnam='%s'" % (self.tablename,raster_id)
-        print(sql)
         try:
             r = DBSession().execute(sql).fetchone()
             if r[0] == 0:
@@ -178,11 +179,11 @@ class XML2RastersResampling:
                      target_file)
         return cmd
 
-    def clearTmp(self):
+    def clearTmp(self,prefix):
         dir_tmp_name = "/tmp/"
         tmp = os.listdir(dir_tmp_name)
         for item in tmp:
-            if item.endswith(".tiff"):
+            if item.startswith(prefix):
                 os.remove(os.path.join(dir_tmp_name, item))         
         
     def ImportXmlObject(self, raster_prefix):
@@ -193,6 +194,12 @@ class XML2RastersResampling:
         
         # Check gdal_path param
         gdal_path =  self.getParams('gdal_path')
+        if gdal_path !='':
+            #we will need to set the GDAL_DATA path 
+            os.environ["GDAL_DATA"] = gdal_path + '/data/' 
+            # and fix the path of bin file
+            gdal_path = gdal_path + '/apps/'
+
 
         #  loop in all raster type
         nb_of_raster = 0
@@ -213,7 +220,7 @@ class XML2RastersResampling:
                # start at the  nearest resolution                
                if float(resolution) >= float(reader.resolution):
                    
-                   output_raster_filename = tempfile.NamedTemporaryFile().name +  "_" + resolution + ".tiff" #reader.get_file(resolution)
+                   output_raster_filename = tempfile.NamedTemporaryFile(prefix=self.tablename).name +  "_" + resolution + ".tiff" #reader.get_file(resolution)
                    # we will keep a sequential number for all resolution, 1, 2, 3, 4, 5 ...
                    resolution_id += 1
                    step1=step2=step2a=step2b=step3=step4=''
@@ -247,13 +254,13 @@ class XML2RastersResampling:
 
                        if raster_type == 'mean':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
-                           tmp_step1 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_mean_step1.tiff"
+                           tmp_step1 = tempfile.NamedTemporaryFile(prefix=self.tablename).name +  "_" + resolution + "_mean_step1.tiff"
                            step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['mean'][resolution_id-1],
                                           "nan_to_num(multiply(A,B))", # "A*B",
                                           tmp_step1)
-                           tmp_step2 = tempfile.NamedTemporaryFile().name + "_" + resolution + "_mean_step2.tiff"   
+                           tmp_step2 = tempfile.NamedTemporaryFile(prefix=self.tablename).name + "_" + resolution + "_mean_step2.tiff"   
                            step2 = self.getGDALcmd(reader.gdalwarp_path, 
                                              tmp_step1,
                                              tmp_step2,
@@ -278,27 +285,26 @@ class XML2RastersResampling:
  
                        if raster_type == 'stddev':
                            ## see http://10.208.34.178/projects/wis-sivn/wiki/Resampling
-                           tmp_step1 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step1.tiff"
+                           tmp_step1 = tempfile.NamedTemporaryFile(prefix=self.tablename).name +  "_" + resolution + "_stddev_step1.tiff"
                            step1 = "python gdal_calc.py --overwrite -A %s -B %s --calc='%s' --outfile='%s'" % (
                                           raster_dict['density'][resolution_id-1],
                                           raster_dict['stddev'][resolution_id-1],
                                           "nan_to_num((A-1)*(B*B))",
                                           tmp_step1)
-                           
-                           tmp_step2 = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step2.tiff"   
+                           tmp_step2 = tempfile.NamedTemporaryFile(prefix=self.tablename).name +  "_" + resolution + "_stddev_step2.tiff"   
                            step2 = self.getGDALcmd(reader.gdalwarp_path, 
                                              tmp_step1,
                                              tmp_step2,
                                              resolution,
                                              'sum')  
                            #reclass 1 - 0
-                           tmp_step2a = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step2a.tiff"
+                           tmp_step2a = tempfile.NamedTemporaryFile(prefix=self.tablename).name +  "_" + resolution + "_stddev_step2a.tiff"
                            step2a = "python gdal_calc.py --overwrite  --co='COMPRESS=DEFLATE' -A %s --calc='%s' --outfile='%s'" % (
                                             raster_dict['density'][resolution_id-1],
                                             "1*(A<3.4028234663852886e+38)",
                                             tmp_step2a)
 
-                           tmp_step2b = tempfile.NamedTemporaryFile().name +  "_" + resolution + "_stddev_step2b.tiff"
+                           tmp_step2b = tempfile.NamedTemporaryFile(prefix=self.tablename).name +  "_" + resolution + "_stddev_step2b.tiff"
                            step2b = self.getGDALcmd(reader.gdalwarp_path,
                                                    tmp_step2a,
                                                    tmp_step2b,
@@ -409,7 +415,7 @@ class XML2RastersResampling:
         
         
         #  we need to flush all tmp file of this object
-        self.clearTmp()
+        self.clearTmp(self.tablename)
         
         return "SUCCESS"
         

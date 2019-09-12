@@ -60,8 +60,9 @@ def parse_arguments():
         '--output-format', '-of', default='', choices=['gtiff', 'pg'],
         help='Output format Geotiff or PostGIS table'
     )
+    ## python 3.6.8 doent support action?? need investigation:  action='append',
     parser.add_argument(
-        '--param', '-m', nargs='?',default='', action='append',
+        '--param', '-m', nargs='?',default='',
         help='Option(s) input'
     )
     parser.add_argument(

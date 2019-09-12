@@ -1,8 +1,8 @@
-echo "create temporary table  metadatatemp as SELECT xml " > ins.sql
-echo "\$\$ " >> ins.sql
-cat $1 >> ins.sql
-echo "\$\$  AS objectXml;" >> ins.sql
-sed -i '3d' ins.sql
+echo "create temporary table  metadatatemp as SELECT xml " > $2.sql
+echo "\$\$ " >> $2.sql
+cat $1 >> $2.sql
+echo "\$\$  AS objectXml;" >> $2.sql
+sed -i '3d' $2.sql
 echo "INSERT INTO $2_metadata 
   SELECT xmltable.*
   FROM metadatatemp,
@@ -38,4 +38,4 @@ echo "INSERT INTO $2_metadata
   srftyp text PATH  'Attribute[@name = \"srftyp\"]/Value',
   sursso text PATH  'Attribute[@name = \"sursso\"]/Value',
   uidcre text PATH  'Attribute[@name = \"uidcre\"]/Value');
-">>ins.sql
+">>$2.sql
