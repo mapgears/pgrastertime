@@ -172,10 +172,10 @@ First iteration of pgRastertime was designed to import your raster data in a pos
 edit your local.ini file to change your postgresql connection info, local path and postprocess file. 
 
 ```
-python3 pgrastertime.py -t testtable -r ./data/18g063330911_0250.object.xml -p load
+python3 pgrastertime.py -f -t depth -r ./data/18g063330911_0025_depth.tiff -p load
 ```
 
-A specific driver was added for a specific raster format define by an XML file. You can create your own 
+A specific driver was added for a specific raster format define by an XML file produce by CARIS software. You can create your own 
 driver in `process` folder.  As example, `xml_import.py` driver alows to import files link to a specific XML object file.
 
 ```
