@@ -110,7 +110,7 @@ class XML2RastersResampling:
         
         if (os.path.isfile(raster_prefix + "_depth.tiff") and
             os.path.isfile(raster_prefix + "_mean.tiff") and
-            os.path.isfile(raster_prefix + "_stddev.tiff") and
+            #os.path.isfile(raster_prefix + "_stddev.tiff") and
             os.path.isfile(raster_prefix + "_density.tiff")):
         
             print("All raster finded! Importing rasters of " + self.xml_filename)
@@ -151,7 +151,8 @@ class XML2RastersResampling:
     def initRasterFileDict(self):
         # init the raster dict
         resolutions = CONFIG['app:main'].get('output.resolutions').split(',')
-        raster_type = ['depth', 'density', 'mean', 'stddev']
+        #raster_type = ['depth', 'density', 'mean', 'stddev']
+        raster_type = ['depth', 'density', 'mean']
         raster_dict = {}
         
         for rtype in raster_type:
@@ -203,7 +204,8 @@ class XML2RastersResampling:
 
         #  loop in all raster type
         nb_of_raster = 0
-        for raster_type in ['depth', 'density', 'mean', 'stddev']:
+        #for raster_type in ['depth', 'density', 'mean', 'stddev']:
+        for raster_type in ['depth', 'density', 'mean']:
             resolution_id = i = 0
             
             for resolution in resolutions:
@@ -381,7 +383,8 @@ class XML2RastersResampling:
                
         #Now we can load in database
         i=0
-        for raster_type in ['depth', 'density', 'mean', 'stddev']:
+        #for raster_type in ['depth', 'density', 'mean', 'stddev']:
+        for raster_type in ['depth', 'density', 'mean']:
             resolution_id = 0
             for resolution in resolutions:
               if float(resolution) >= float(reader.resolution):   
