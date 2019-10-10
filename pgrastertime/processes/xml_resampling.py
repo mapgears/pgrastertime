@@ -15,7 +15,7 @@ class XML2RastersResampling:
 
     def __init__(self, xml_filename, tablename, force, sqlfiles, verbose, dry_run,userparam=''):
         self.xml_filename = xml_filename
-        self.tablename = tablename
+        self.tablename = str.lower(tablename)
         self.force = force
         self.sqlfiles = sqlfiles
         self.verbose = verbose

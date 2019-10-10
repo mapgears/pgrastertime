@@ -26,7 +26,7 @@ class RasterReader(Reader):
         self.extension = os.path.splitext(filename)[1]
         self.destination = tempfile.mkdtemp()
         self.date = datetime.now()
-        self.tablename = tablename
+        self.tablename = str.lower(tablename)
         self.warp = warp
         self.force = force
         self.verbose = verbose
