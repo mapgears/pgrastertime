@@ -18,5 +18,3 @@ pgrastertime = {path = ".",editable = true}
 "psycopg2" = "*"
 requests = "*"
 
-[requires]
-python_version = "3.6"
