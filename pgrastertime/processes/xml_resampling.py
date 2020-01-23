@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from pgrastertime.data.sqla import DBSession
+import ntpath
+import os
+import subprocess
+import tempfile
+from urllib.parse import urlparse
+
 from sqlalchemy.exc import DatabaseError
-from pgrastertime.readers import RasterReader
-from pgrastertime.processes import LoadRaster
+
+from pgrastertime import CONFIG
+from pgrastertime.data.sqla import DBSession
 from pgrastertime.processes.post_proc import PostprocSQL
 from pgrastertime.processes.raster2pgsql import Raster2pgsql
 from pgrastertime.processes.spinner import Spinner
-from pgrastertime import CONFIG
-import subprocess
-import sys, os, ntpath, tempfile, platform
+from pgrastertime.readers import RasterReader
+
 
 class XML2RastersResampling:
 
@@ -34,12 +39,14 @@ class XML2RastersResampling:
 
 
     def getConParam(self):
+        url = urlparse(CONFIG['app:main'].get('sqlalchemy.url'))
+
         conDic = {}
-        conDic['pg_host'] = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[1].split(':')[0]
-        conDic['pg_port'] = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[1].split(':')[1]
-        conDic['pg_dbname'] = CONFIG['app:main'].get('sqlalchemy.url').split('/')[3]
-        conDic['pg_pw'] = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[1]
-        conDic['pg_user'] = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[0].split(':')[0]
+        conDic['pg_host'] = url.hostname
+        conDic['pg_port'] = url.port
+        conDic['pg_dbname'] = url.path[1:]
+        conDic['pg_pw'] = url.password
+        conDic['pg_user'] = url.username
         return conDic
 
     def insertXML(self, xml_filename):
