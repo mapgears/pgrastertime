@@ -7,4 +7,4 @@ class Process:
         self.reader = reader
 
     def run(self):
-        raise Exception('Not implemented')
+        raise NotImplementedError
