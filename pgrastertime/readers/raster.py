@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 import os
 from shutil import (
     copy,
@@ -25,7 +26,7 @@ class RasterReader(Reader):
         self.size_x = self.dataset.RasterXSize
         self.size_y = self.dataset.RasterYSize
         self.extension = os.path.splitext(filename)[1]
-        self.destination = tempfile.mkdtemp()
+        self.destination = tempfile.TemporaryDirectory()
         self.date = datetime.now()
         self.tablename = str.lower(tablename)
         self.warp = warp
@@ -33,9 +34,10 @@ class RasterReader(Reader):
         self.verbose = verbose
         self.gdalwarp_path = gdalwarp_path
         self.raster_type = raster_type
-
-    def __del__(self):
-        rmtree(self.destination)
+        super().__init__(
+            date=datetime.now(),
+            resolution=self.dataset.GetGeoTransform()[1],
+        )
 
     @property
     def id(self):
