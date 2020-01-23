@@ -126,14 +126,14 @@ def main():
 
         print("Deploy pgrastertime table %s to production ... " % args.tablename)
         spinner.start()
-        SQLModel.runSQL('', args.tablename, args.processing, False,args.verbose)
+        SQLModel.runSQL(args.tablename, args.processing, False,args.verbose)
         spinner.stop()
         exit()
 
     if args.processing == 'validate':
 
         print("Validate pgrastertime table %s ... " % args.tablename)
-        SQLModel.runSQL(root, args.tablename, args.processing,True,args.verbose)
+        SQLModel.runSQL(args.tablename, args.processing,True,args.verbose)
         exit()
 
     # if force, we will drop et rebuilt table

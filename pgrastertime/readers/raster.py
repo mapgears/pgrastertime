@@ -8,8 +8,9 @@ from shutil import (
 import tempfile,sys
 from .reader import Reader
 from osgeo import gdal
-from pgrastertime import CONFIG
-from datetime import datetime, timedelta
+
+from pgrastertime import CONFIG, ROOT
+from pgrastertime.compat import fspath
 
 
 class RasterReader(Reader):
@@ -44,7 +45,7 @@ class RasterReader(Reader):
     def getPgrastertimeTableStructure(self,target_name):
         # strucure table can be customized by user and are stored in ./sql folder
         pgrast_table = CONFIG['app:main'].get('db.pgrastertable')
-        pgrast_file = os.path.dirname(os.path.realpath(sys.argv[0])) + pgrast_table
+        pgrast_file = fspath(ROOT / pgrast_table)
         with open(pgrast_file) as f:
             pgrast_sql = f.readlines()
             return (''.join(pgrast_sql)).replace('pgrastertime',target_name)
@@ -52,7 +53,7 @@ class RasterReader(Reader):
     def getMetadataeTableStructure(self,target_name):
         # strucure table can be customized by user and are stored in ./sql folder
         meta_table = CONFIG['app:main'].get('db.metadatatable')
-        meta_file = os.path.dirname(os.path.realpath(sys.argv[0])) + meta_table
+        meta_file = fspath(ROOT / meta_table)
         with open(meta_file) as f:
             meta_sql = f.readlines()
             return (''.join(meta_sql)).replace('metadata',target_name + '_metadata')

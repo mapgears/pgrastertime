@@ -1,9 +1,12 @@
-import geoalchemy2, os, sys
+import geoalchemy2
 import sqlalchemy as sa
-from .sqla import Base
-from pgrastertime import CONFIG
+
+from pgrastertime import CONFIG, ROOT
+from pgrastertime.compat import fspath
 from pgrastertime.data.sqla import DBSession
 from pgrastertime.processes.post_proc import PostprocSQL
+
+from .sqla import Base
 
 
 class PGRasterTime(Base):
@@ -95,8 +98,12 @@ class SQLModel():
         except sa.exc.DatabaseError as error:
              print('Fail to run SQL : %s ' % (error.args[0]))
 
-    def runSQL(root,tablename,process, show_result=False,verbose=False):
-
-           script = root + CONFIG['app:main'].get('db.sqlpath') + "/" + process + ".sql"
-           PostprocSQL(script,tablename, None ,show_result,verbose).execute()
-
+    def runSQL(tablename, process, show_result=False, verbose=False):
+        script = ROOT / CONFIG['app:main'].get('db.sqlpath') / process + ".sql"
+        PostprocSQL(
+            fspath(script),
+            tablename,
+            None,
+            show_result,
+            verbose
+        ).execute()
