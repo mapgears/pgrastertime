@@ -19,6 +19,7 @@ class PGRasterTime(Base):
     filename = sa.Column(sa.UnicodeText, nullable=True)
     sys_period = sa.Column(sa.dialects.postgresql.TSTZRANGE, nullable=False)
 
+
 class Metadata(Base):
     __tablename__ = "metadata"
 
@@ -54,6 +55,7 @@ class Metadata(Base):
     sursso = sa.Column(sa.UnicodeText, nullable=True)
     uidcre = sa.Column(sa.UnicodeText, nullable=True)
 
+
 class SpatialRefSys(Base):
     __tablename__ = 'spatial_ref_sys'
 
@@ -67,36 +69,44 @@ class SpatialRefSys(Base):
     proj4text = sa.Column(sa.VARCHAR(length=2048), autoincrement=False,
                           nullable=True)
 
+
 class SQLModel():
 
     def __init__(self, tablename):
         self.tablename = tablename
 
     def setPgrastertimeTableStructure(target_name):
-        # strucure table can be customized by user and are stored in ./sql folder
-        pgrast_table = CONFIG['app:main'].get('db.pgrastertable')
-        with open(pgrast_table) as f:
-            pgrast_sql = f.readlines()
-            pgrast_target_table = ''.join(pgrast_sql).replace('pgrastertime',target_name)
+        # strucure table can be customized by user and are stored in ./sql
+        # folder
+        pgrast_table = ROOT / CONFIG['app:main'].get('db.pgrastertable')
+        with open(fspath(pgrast_table)) as f:
+            pgrast_sql = f.read()
+            pgrast_target_table = pgrast_sql.replace('pgrastertime',
+                                                     target_name)
+
         try:
             DBSession().execute("DROP TABLE IF EXISTS " + target_name)
             DBSession().execute(pgrast_target_table)
             DBSession().commit()
         except sa.exc.DatabaseError as error:
-             print('Fail to run SQL : %s ' % (error.args[0]))
+            print('Fail to run SQL : %s ' % (error.args[0]))
 
     def setMetadataeTableStructure(target_name):
-        # strucure table can be customized by user and are stored in ./sql folder
-        meta_table = CONFIG['app:main'].get('db.metadatatable')
-        with open(meta_table) as f:
-            meta_sql = f.readlines()
-            mate_target_table = ''.join(meta_sql).replace('metadata',target_name + '_metadata')
+        # strucure table can be customized by user and are stored in ./sql
+        # folder
+        meta_table = ROOT / CONFIG['app:main'].get('db.metadatatable')
+        with open(fspath(meta_table)) as f:
+            meta_sql = f.read()
+            mate_target_table = meta_sql.replace('metadata',
+                                                 target_name + '_metadata')
         try:
-            DBSession().execute("DROP TABLE IF EXISTS " + target_name + "_metadata")
+            DBSession().execute(
+                "DROP TABLE IF EXISTS " + target_name + "_metadata"
+            )
             DBSession().execute(mate_target_table)
             DBSession().commit()
         except sa.exc.DatabaseError as error:
-             print('Fail to run SQL : %s ' % (error.args[0]))
+            print('Fail to run SQL : %s ' % (error.args[0]))
 
     def runSQL(tablename, process, show_result=False, verbose=False):
         script = ROOT / CONFIG['app:main'].get('db.sqlpath') / process + ".sql"
