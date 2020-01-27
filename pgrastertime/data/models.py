@@ -15,10 +15,10 @@ class PGRasterTime(Base):
     resolution = sa.Column(sa.Float, nullable=False)
     filename = sa.Column(sa.UnicodeText, nullable=True)
     sys_period = sa.Column(sa.dialects.postgresql.TSTZRANGE, nullable=False)
-    
+
 class Metadata(Base):
-    __tablename__ = "metadata"    
-    
+    __tablename__ = "metadata"
+
     id = sa.Column(sa.BigInteger, primary_key=True)
     dunits = sa.Column(sa.UnicodeText, nullable=True)
     hordat = sa.Column(sa.UnicodeText, nullable=True)
@@ -63,15 +63,15 @@ class SpatialRefSys(Base):
                        nullable=True)
     proj4text = sa.Column(sa.VARCHAR(length=2048), autoincrement=False,
                           nullable=True)
-                          
+
 class SQLModel():
 
     def __init__(self, tablename):
         self.tablename = tablename
-        
+
     def setPgrastertimeTableStructure(target_name):
         # strucure table can be customized by user and are stored in ./sql folder
-        pgrast_table = CONFIG['app:main'].get('db.pgrastertable') 
+        pgrast_table = CONFIG['app:main'].get('db.pgrastertable')
         with open(pgrast_table) as f:
             pgrast_sql = f.readlines()
             pgrast_target_table = ''.join(pgrast_sql).replace('pgrastertime',target_name)
@@ -84,7 +84,7 @@ class SQLModel():
 
     def setMetadataeTableStructure(target_name):
         # strucure table can be customized by user and are stored in ./sql folder
-        meta_table = CONFIG['app:main'].get('db.metadatatable') 
+        meta_table = CONFIG['app:main'].get('db.metadatatable')
         with open(meta_table) as f:
             meta_sql = f.readlines()
             mate_target_table = ''.join(meta_sql).replace('metadata',target_name + '_metadata')
@@ -96,7 +96,7 @@ class SQLModel():
              print('Fail to run SQL : %s ' % (error.args[0]))
 
     def runSQL(root,tablename,process, show_result=False,verbose=False):
-           
+
            script = root + CONFIG['app:main'].get('db.sqlpath') + "/" + process + ".sql"
            PostprocSQL(script,tablename, None ,show_result,verbose).execute()
-     
+

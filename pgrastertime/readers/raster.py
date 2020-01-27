@@ -43,7 +43,7 @@ class RasterReader(Reader):
 
     def getPgrastertimeTableStructure(self,target_name):
         # strucure table can be customized by user and are stored in ./sql folder
-        pgrast_table = CONFIG['app:main'].get('db.pgrastertable') 
+        pgrast_table = CONFIG['app:main'].get('db.pgrastertable')
         pgrast_file = os.path.dirname(os.path.realpath(sys.argv[0])) + pgrast_table
         with open(pgrast_file) as f:
             pgrast_sql = f.readlines()
@@ -51,19 +51,19 @@ class RasterReader(Reader):
 
     def getMetadataeTableStructure(self,target_name):
         # strucure table can be customized by user and are stored in ./sql folder
-        meta_table = CONFIG['app:main'].get('db.metadatatable') 
+        meta_table = CONFIG['app:main'].get('db.metadatatable')
         meta_file = os.path.dirname(os.path.realpath(sys.argv[0])) + meta_table
         with open(meta_file) as f:
             meta_sql = f.readlines()
             return (''.join(meta_sql)).replace('metadata',target_name + '_metadata')
 
     def get_file(self, resolution=None):
-        
+
         if float(self.resolution) > float(resolution):
            return None
         if not resolution or float(self.resolution) == float(resolution):
           dataset = self.dataset
-        
+
         else:
             if  float(self.resolution) < float(resolution):
                 dataset = self.dataset
@@ -71,14 +71,14 @@ class RasterReader(Reader):
                 fname = '{}{}'.format(self.resolution, self.extension)
                 fpath = os.path.join(self.destination, fname)
                 dataset=gdal.Open( fpath, gdal.GA_ReadOnly)
-     
-        # OK we need a tmp filename   
+
+        # OK we need a tmp filename
         filename = '{}{}'.format(self.raster_type + "_" + resolution, self.extension)
         fullpath = self.destination + "_" + filename
         self.resolution=resolution
-                    
+
         if self.warp:
-        
+
             #align pixels and set the destination srs
             opt = gdal.WarpOptions( resampleAlg='max',
                  xRes=resolution,
@@ -87,7 +87,7 @@ class RasterReader(Reader):
                  targetAlignedPixels=True,
                  multithread=True,
                  creationOptions=['COMPRESS=DEFLATE'] )
-        
+
             if self.verbose:
                 print ("Align pixels on resolution/Reproject with GDAL of " + self.filename)
             gdal.Warp(fullpath, dataset, options=opt)

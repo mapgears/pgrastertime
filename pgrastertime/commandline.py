@@ -37,11 +37,11 @@ def parse_arguments():
         help="Target raster table name in Postgresql"
     )
     parser.add_argument(
-        '--sqlfiles', '-s', default='', 
+        '--sqlfiles', '-s', default='',
         help="Custom SQL files script to process, separeted by commas"
     )
     parser.add_argument(
-        '--dataset', '-d', default='', 
+        '--dataset', '-d', default='',
         help="Input Dataset used as an option for processing (shapefiles)"
     )
     parser.add_argument(
@@ -53,7 +53,7 @@ def parse_arguments():
         help='Processing option',
     )
     parser.add_argument(
-        '--output', '-o', default='', 
+        '--output', '-o', default='',
         help='Output format shapefiles or PostGIS table'
     )
     parser.add_argument(
@@ -97,23 +97,23 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
-    
+
     if not args.verbose:
         args.verbose = False
-    
+
     # if not set use local.ini
     if not (args.config_file):
         inif = "local.ini"
     else:
         inif = args.config_file
-    
+
     init_config(inif)
-    
+
     # init the spiner for futur use
     spinner = Spinner()
 
     # Custom Sedimentation process
-    if args.processing == 'sedimentation':        
+    if args.processing == 'sedimentation':
         Sedimentation(args.tablename,args.param,args.dataset,args.output,args.output_format,args.verbose).run()
         exit()
 
@@ -129,54 +129,54 @@ def main():
         SQLModel.runSQL('', args.tablename, args.processing, False,args.verbose)
         spinner.stop()
         exit()
-        
+
     if args.processing == 'validate':
 
         print("Validate pgrastertime table %s ... " % args.tablename)
         SQLModel.runSQL(root, args.tablename, args.processing,True,args.verbose)
         exit()
-        
+
     # if force, we will drop et rebuilt table
     if args.force:
         SQLModel.setPgrastertimeTableStructure(args.tablename)
         SQLModel.setMetadataeTableStructure(args.tablename)
-    
+
     # 1. Load Processing Class
     # TODO: Replace this by a factory
 
     #This option is broken
     if args.processing == 'load':
-    
+
         # 2. Load file with reader options
         # TODO: Replace this by a factory
         reader = RasterReader(args.reader, args.tablename, True ,args.force)
-        
+
         process_cls = LoadRaster(reader)
         # 3. Execute process
         # TODO: Handle dry run, force overwrite and reset-data
         process_cls.run()
-        
+
         # Finaly, user create some post process SQL to run over loaded table
-        # User can have multiple SQL file to run       
+        # User can have multiple SQL file to run
         if args.sqlfiles != '':
             print("Post process SQL file: " + args.sqlfiles)
             PostprocSQL(args.sqlfiles,args.tablename).execute()
-        
+
     elif args.processing == 'xml':
-    
-        # all XML object refer to 4 raster files that we 
+
+        # all XML object refer to 4 raster files that we
         # need to load in database.  If it's a directory;
         error_list = []
         ns=nb=er=0
         if os.path.isdir(args.reader):
 
             # we will inform each loop how many file left ...
-            xmlCounter = len(glob.glob1(args.reader,"*.xml")) 
- 
+            xmlCounter = len(glob.glob1(args.reader,"*.xml"))
+
             # We will log how much time it will take
             start_time = time.time()
             date_started = str(datetime.now())
-            
+
             # Print result in logfile
             log_date = date_started.replace(" ","_").replace(":","-").split(".", 1)[0]
             loggingfile = ("pgrastertime_%s.log" % log_date)
@@ -188,10 +188,10 @@ def main():
                     nb += 1
                     step = "\n--- %s : %s (%d of %d)" % (
                             str(datetime.now()).split(".", 1)[0],
-                            file, 
-                            nb, 
+                            file,
+                            nb,
                             xmlCounter)
-                    logfile = open(loggingfile, "a")  
+                    logfile = open(loggingfile, "a")
                     logfile.write(step)
                     logfile.close
                     if (XML2RastersResampling(os.path.join(args.reader, file),
@@ -205,9 +205,9 @@ def main():
                         error_list.append(os.path.join(args.reader, file))
                     else:
                         ns += 1
-                
-                
-            #  add some important information about this run    
+
+
+            #  add some important information about this run
             logfile = open(loggingfile, "a")
             logfile.write("\n\n==== Parameters\n")
             logfile.write("Param : Target table -> %s \n" % args.tablename)
@@ -220,7 +220,7 @@ def main():
             logfile.write("Number of XML file to process : %d \n" % xmlCounter)
             logfile.write("Number of invalide XML file or fail porcess : %d \n" % er)
             logfile.write("Execution took %s seconds to process \n" % str((time.time() - start_time)).split(".", 1)[0])
-            
+
             # Only if we have corrupt object
             if len(error_list):
                 logfile.write("\n==== Invalid or corrupt files list:\n")
@@ -229,8 +229,8 @@ def main():
                 logfile.write("\n==== No Invalid files")
             # pintf and close
             logfile.close
-            
-            # we print to screen to help user    
+
+            # we print to screen to help user
             with open(loggingfile, "r") as logfile:
                 for line in logfile:
                     print(line.replace("\n",""))
@@ -240,7 +240,7 @@ def main():
             # We will log how much time it will take
             start_time = time.time()
             date_started = str(datetime.now())
-            
+
             # resample the file:
             XML2RastersResampling(args.reader,
                              args.tablename,
@@ -248,8 +248,8 @@ def main():
                              args.sqlfiles,
                              args.verbose,
                              args.dry_run,
-                             args.param).importRasters()                 
-                             
+                             args.param).importRasters()
+
             print("\n\n==== Parameters\n")
             print("Param : Target table -> %s" % args.tablename)
             print("Param : Source directory -> %s" % args.reader)
@@ -257,5 +257,5 @@ def main():
             print("Param : Post process -> %s" % args.sqlfiles)
             print("==== Result")
             print("Import Started : %s" % date_started.split(".", 1)[0])
-            print("Import Ended : %s" % str(datetime.now()).split(".", 1)[0]) 
-            print("Execution took %s minutes to process" % str((time.time() - start_time)/60).split(".", 1)[0])                           
+            print("Import Ended : %s" % str(datetime.now()).split(".", 1)[0])
+            print("Execution took %s minutes to process" % str((time.time() - start_time)/60).split(".", 1)[0])

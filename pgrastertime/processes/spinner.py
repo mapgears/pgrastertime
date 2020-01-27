@@ -9,7 +9,7 @@ class Spinner:
     @staticmethod
     def spinning_cursor():
         print("Processing ... ")
-        while 1: 
+        while 1:
             for cursor in '|/-\\': yield cursor
 
     def __init__(self, delay=None):
