@@ -1,5 +1,4 @@
-
-
+-- All other tables and trigger  needs in WIS data model
 CREATE FUNCTION partition_insert_trigger()
     RETURNS trigger
     LANGUAGE 'plpgsql'
@@ -59,7 +58,7 @@ RETURN NULL;
 END;
 $BODY$;
 
-
+-- Soudings template table used for all regions and resolutions
 CREATE TABLE soundings
 (
     id serial NOT NULL,
@@ -84,6 +83,8 @@ CREATE TRIGGER partition_insert
     FOR EACH ROW
     EXECUTE PROCEDURE partition_insert_trigger();
 
+-- pgrastertime insert into error table when it fail
+
 CREATE TABLE  soundings_error
 (
     id serial,
@@ -102,6 +103,8 @@ WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
+
+-- The metadata table need in WIS database
 
 CREATE TABLE public.metadata
 (
@@ -141,6 +144,3 @@ WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
-
-
-
