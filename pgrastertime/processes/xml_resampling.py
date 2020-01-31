@@ -22,7 +22,7 @@ from .process import PgProcess
 class XML2RastersResampling(PgProcess):
 
     def __init__(self, xml_filename, tablename, force, sqlfiles, verbose,
-                 dry_run, userparam=''):
+                 dry_run, userparam=None):
         self.temp_files = []
         self.xml_filename = xml_filename
         self.tablename = str.lower(tablename)
@@ -30,17 +30,18 @@ class XML2RastersResampling(PgProcess):
         self.sqlfiles = sqlfiles
         self.verbose = verbose
         self.dry_run = dry_run
-        self.userparam = userparam
+        self.userparam = userparam or []
 
     def getParams(self, param):
         # this process need gdal_path parametre
-        try:
-            k, v = self.userparam.split('=')
-        except ValueError:
-            return ''
-        else:
-            if k[0].lower() == param:
-                return v
+        for userparam in self.userparam:
+            try:
+                k, v = userparam.split('=')
+            except ValueError:
+                continue
+            else:
+                if k[0].lower() == param:
+                    return v
 
         return ''
 
