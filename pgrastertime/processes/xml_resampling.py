@@ -40,7 +40,7 @@ class XML2RastersResampling(PgProcess):
             except ValueError:
                 continue
             else:
-                if k[0].lower() == param:
+                if k.lower() == param:
                     return v
 
         return ''
@@ -119,7 +119,7 @@ class XML2RastersResampling(PgProcess):
         if (
             os.path.isfile(raster_prefix + "_depth.tiff") and
             os.path.isfile(raster_prefix + "_mean.tiff") and
-            #os.path.isfile(raster_prefix + "_stddev.tiff") and
+            # os.path.isfile(raster_prefix + "_stddev.tiff") and
             os.path.isfile(raster_prefix + "_density.tiff")
         ):
 
@@ -170,7 +170,7 @@ class XML2RastersResampling(PgProcess):
     def initRasterFileDict(self):
         # init the raster dict
         resolutions = CONFIG['app:main'].get('output.resolutions').split(',')
-        #raster_type = ['depth', 'density', 'mean', 'stddev']
+        # raster_type = ['depth', 'density', 'mean', 'stddev']
         raster_type = ['depth', 'density', 'mean']
         raster_dict = {}
 
@@ -212,7 +212,7 @@ class XML2RastersResampling(PgProcess):
         # Check gdal_path param
         gdal_path = self.getParams('gdal_path')
         if gdal_path != '':
-            #we will need to set the GDAL_DATA path
+            # we will need to set the GDAL_DATA path
             os.environ["GDAL_DATA"] = gdal_path + '/data/'
             # and fix the path of bin file
             gdal_path = gdal_path + '/apps/'
