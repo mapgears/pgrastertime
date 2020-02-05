@@ -108,12 +108,28 @@ class SQLModel():
         except sa.exc.DatabaseError as error:
             print('Fail to run SQL : %s ' % (error.args[0]))
 
-    def runSQL(tablename, process, show_result=False, verbose=False):
-        script = ROOT / CONFIG['app:main'].get('db.sqlpath') / process + ".sql"
+    def switchTemplateTableName(self, filename):
+        # need to replace template table name 'pgrastrtime'
+        tmpfile = "/tmp/pgrastmp.sql"
+        with open(filename) as f:
+            sqlfile = f.readlines()
+            f.close
+            patch = [l.replace("pgrastertime", self.tablename) for l in sqlfile]
+            with open(tmpfile,"w") as w:
+                w.write("".join(patch))
+                f.close
+                return tmpfile
+        return ''
+
+    def runSQL(self, process, show_result=False, verbose=False):
+
+        script = "%s/%s/%s.sql" % (ROOT,CONFIG['app:main'].get('db.sqlpath'),process)
+        tmpscript = self.switchTemplateTableName(script)
+
         PostprocSQL(
-            fspath(script),
-            tablename,
+            fspath(tmpscript),
+            self.tablename,
             None,
             show_result,
             verbose
-        ).execute()
+            ).execute()
