@@ -10,21 +10,21 @@ import sys, os
 class LoadRaster(Process):
 
     def run(self):
-        
-        resolutions = CONFIG['app:main'].get('output.resolutions').split(',')     
-        
+
+        resolutions = CONFIG['app:main'].get('output.resolutions').split(',')
+
         for resolution in resolutions:
             filename = self.reader.get_file(resolution=resolution)
-            
+
             if not filename:
                 continue
-            
-            ## *NOTE:* sqlalchemy didn't able to manage result from some large raster file.  
+
+            ## *NOTE:* sqlalchemy didn't able to manage result from some large raster file.
             ## Using system cmd trhough psql workaround work fine.
             cmd =  "raster2pgsql -Y -a -f raster -t 100x100 -n filename " + \
-                    filename +" " + self.reader.tablename + " > " +filename+".sql"           
+                    filename +" " + self.reader.tablename + " > " +filename+".sql"
             if subprocess.call(cmd, shell=True) == 0:
-            
+
                 # if raster2pgsql run w/ success, we import SQL file in database
                 pg_host = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[1].split(':')[0]
                 pg_port = CONFIG['app:main'].get('sqlalchemy.url').split('/')[2].split('@')[1].split(':')[1]
@@ -34,9 +34,9 @@ class LoadRaster(Process):
                 cmd = "psql -q -p " + pg_port + " -h " + pg_host + \
                       " -U " + pg_user + " -d " +  pg_dbname + \
                       " -f " + filename + ".sql"
-                os.environ["PGPASSWORD"] = pg_pw    
+                os.environ["PGPASSWORD"] = pg_pw
                 if subprocess.call(cmd, shell=True) == 0:
-                
+
                     ## if raster file upload w/ success, we update some metadata in DFO model
                     sql = "UPDATE " + self.reader.tablename + " set filename = '" + \
                           self.reader.filename+"', tile_id="+str(self.reader.id)+",resolution = " + \
@@ -45,14 +45,14 @@ class LoadRaster(Process):
                           "' and resolution is null"
                     try:
                         DBSession().execute(sql)
-                        DBSession().commit()                          
+                        DBSession().commit()
                     except DatabaseError as error:
                         print('Fail to run SQL : %s ' % (error.args[0]))
                         return False
-                
-                
+
+
                 else:
                     return False
-        
+
         # everything is OK
         return True

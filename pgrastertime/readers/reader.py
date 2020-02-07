@@ -15,7 +15,7 @@ class Reader:
 
     @property
     def id(self):
-        raise(Exception('Not implemented'))
+        raise NotImplementedError
 
     def get_file(self, resolution=None):
-        raise(Exception('Not implemented'))
+        raise NotImplementedError

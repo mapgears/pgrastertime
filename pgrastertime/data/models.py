@@ -1,9 +1,12 @@
-import geoalchemy2, os, sys
+import geoalchemy2
 import sqlalchemy as sa
-from .sqla import Base
-from pgrastertime import CONFIG
+
+from pgrastertime import CONFIG, ROOT
+from pgrastertime.compat import fspath
 from pgrastertime.data.sqla import DBSession
 from pgrastertime.processes.post_proc import PostprocSQL
+
+from .sqla import Base
 
 
 class PGRasterTime(Base):
@@ -15,10 +18,11 @@ class PGRasterTime(Base):
     resolution = sa.Column(sa.Float, nullable=False)
     filename = sa.Column(sa.UnicodeText, nullable=True)
     sys_period = sa.Column(sa.dialects.postgresql.TSTZRANGE, nullable=False)
-    
+
+
 class Metadata(Base):
-    __tablename__ = "metadata"    
-    
+    __tablename__ = "metadata"
+
     id = sa.Column(sa.BigInteger, primary_key=True)
     dunits = sa.Column(sa.UnicodeText, nullable=True)
     hordat = sa.Column(sa.UnicodeText, nullable=True)
@@ -51,6 +55,7 @@ class Metadata(Base):
     sursso = sa.Column(sa.UnicodeText, nullable=True)
     uidcre = sa.Column(sa.UnicodeText, nullable=True)
 
+
 class SpatialRefSys(Base):
     __tablename__ = 'spatial_ref_sys'
 
@@ -63,43 +68,44 @@ class SpatialRefSys(Base):
                        nullable=True)
     proj4text = sa.Column(sa.VARCHAR(length=2048), autoincrement=False,
                           nullable=True)
-<<<<<<< Updated upstream
-                          
-class SQLModel():
-=======
-
 
 class SQLModel:
->>>>>>> Stashed changes
 
     def __init__(self, tablename):
         self.tablename = tablename
-        
+
     def setPgrastertimeTableStructure(target_name):
-        # strucure table can be customized by user and are stored in ./sql folder
-        pgrast_table = CONFIG['app:main'].get('db.pgrastertable') 
-        with open(pgrast_table) as f:
-            pgrast_sql = f.readlines()
-            pgrast_target_table = ''.join(pgrast_sql).replace('pgrastertime',target_name)
+        # strucure table can be customized by user and are stored in ./sql
+        # folder
+        pgrast_table = ROOT / CONFIG['app:main'].get('db.pgrastertable')
+        with open(fspath(pgrast_table)) as f:
+            pgrast_sql = f.read()
+            pgrast_target_table = pgrast_sql.replace('pgrastertime',
+                                                     target_name)
+
         try:
             DBSession().execute("DROP TABLE IF EXISTS " + target_name)
             DBSession().execute(pgrast_target_table)
             DBSession().commit()
         except sa.exc.DatabaseError as error:
-             print('Fail to run SQL : %s ' % (error.args[0]))
+            print('Fail to run SQL : %s ' % (error.args[0]))
 
     def setMetadataeTableStructure(target_name):
-        # strucure table can be customized by user and are stored in ./sql folder
-        meta_table = CONFIG['app:main'].get('db.metadatatable') 
-        with open(meta_table) as f:
-            meta_sql = f.readlines()
-            mate_target_table = ''.join(meta_sql).replace('metadata',target_name + '_metadata')
+        # strucure table can be customized by user and are stored in ./sql
+        # folder
+        meta_table = ROOT / CONFIG['app:main'].get('db.metadatatable')
+        with open(fspath(meta_table)) as f:
+            meta_sql = f.read()
+            mate_target_table = meta_sql.replace('metadata',
+                                                 target_name + '_metadata')
         try:
-            DBSession().execute("DROP TABLE IF EXISTS " + target_name + "_metadata")
+            DBSession().execute(
+                "DROP TABLE IF EXISTS " + target_name + "_metadata"
+            )
             DBSession().execute(mate_target_table)
             DBSession().commit()
         except sa.exc.DatabaseError as error:
-             print('Fail to run SQL : %s ' % (error.args[0]))
+            print('Fail to run SQL : %s ' % (error.args[0]))
 
     def switchTemplateTableName(self, filename):
         # need to replace template table name 'pgrastrtime'
@@ -115,10 +121,9 @@ class SQLModel:
         return ''
 
     def runSQL(self, process, show_result=False, verbose=False):
-        
+
         script = "%s/%s/%s.sql" % (ROOT,CONFIG['app:main'].get('db.sqlpath'),process)
         tmpscript = self.switchTemplateTableName(script)
-        
         PostprocSQL(
             fspath(tmpscript),
             self.tablename,
