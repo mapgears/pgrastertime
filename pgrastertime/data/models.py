@@ -63,8 +63,14 @@ class SpatialRefSys(Base):
                        nullable=True)
     proj4text = sa.Column(sa.VARCHAR(length=2048), autoincrement=False,
                           nullable=True)
+<<<<<<< Updated upstream
                           
 class SQLModel():
+=======
+
+
+class SQLModel:
+>>>>>>> Stashed changes
 
     def __init__(self, tablename):
         self.tablename = tablename
@@ -95,8 +101,28 @@ class SQLModel():
         except sa.exc.DatabaseError as error:
              print('Fail to run SQL : %s ' % (error.args[0]))
 
-    def runSQL(root,tablename,process, show_result=False,verbose=False):
-           
-           script = root + CONFIG['app:main'].get('db.sqlpath') + "/" + process + ".sql"
-           PostprocSQL(script,tablename, None ,show_result,verbose).execute()
-     
+    def switchTemplateTableName(self, filename):
+        # need to replace template table name 'pgrastrtime'
+        tmpfile = "/tmp/pgrastmp.sql"
+        with open(filename) as f:
+            sqlfile = f.readlines()
+            f.close
+            patch = [l.replace("pgrastertime", self.tablename) for l in sqlfile]
+            with open(tmpfile,"w") as w:
+                w.write("".join(patch))
+                f.close
+                return tmpfile
+        return ''
+
+    def runSQL(self, process, show_result=False, verbose=False):
+        
+        script = "%s/%s/%s.sql" % (ROOT,CONFIG['app:main'].get('db.sqlpath'),process)
+        tmpscript = self.switchTemplateTableName(script)
+        
+        PostprocSQL(
+            fspath(tmpscript),
+            self.tablename,
+            None,
+            show_result,
+            verbose
+            ).execute()

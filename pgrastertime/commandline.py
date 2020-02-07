@@ -133,7 +133,7 @@ def main():
     if args.processing == 'validate':
 
         print("Validate pgrastertime table %s ... " % args.tablename)
-        SQLModel.runSQL(root, args.tablename, args.processing,True,args.verbose)
+        SQLModel(args.tablename).runSQL( args.processing,True,args.verbose)
         exit()
         
     # if force, we will drop et rebuilt table

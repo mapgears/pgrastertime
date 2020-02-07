@@ -194,10 +194,10 @@ class XML2RastersResampling:
         raster_dict = self.initRasterFileDict()
         
         # Check gdal_path param
-        gdal_path =  self.getParams('gdal_path')
-        if gdal_path !='':
-            #we will need to set the GDAL_DATA path 
-            os.environ["GDAL_DATA"] = gdal_path + '/data/' 
+        gdal_path = self.getParams('gdal_path')
+        if gdal_path != '':
+            #we will need to set the GDAL_DATA path
+            os.environ["GDAL_DATA"] = gdal_path + '/data/'
             # and fix the path of bin file
             gdal_path = gdal_path + '/apps/'
 
