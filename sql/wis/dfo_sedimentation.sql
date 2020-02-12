@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_sedimentation(text, text, geometry, text, numeric, text)
 
--- DROP FUNCTION public.dfo_sedimentation(text, text, geometry, text, numeric, text);
+DROP FUNCTION public.dfo_sedimentation(text, text, geometry, text, numeric, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_sedimentation(
 	date_ori text,

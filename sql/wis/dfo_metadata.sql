@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_metadata(text, text)
 
--- DROP FUNCTION public.dfo_metadata(text, text);
+DROP FUNCTION public.dfo_metadata(text, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_metadata(
 	rastertable text,

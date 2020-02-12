@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_invalidate(text, text)
 
--- DROP FUNCTION public.dfo_invalidate(text, text);
+DROP FUNCTION public.dfo_invalidate(text, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_invalidate(
 	rastertable text,

@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_get_conformance_band(raster, text, text)
 
--- DROP FUNCTION public.dfo_get_conformance_band(raster, text, text);
+DROP FUNCTION public.dfo_get_conformance_band(raster, text, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_get_conformance_band(
 	in_raster raster,

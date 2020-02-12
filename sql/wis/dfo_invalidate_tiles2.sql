@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_invalidate_tiles(character varying, character varying, boolean)
 
--- DROP FUNCTION public.dfo_invalidate_tiles(character varying, character varying, boolean);
+DROP FUNCTION public.dfo_invalidate_tiles(character varying, character varying, boolean);
 
 CREATE OR REPLACE FUNCTION public.dfo_invalidate_tiles2(
 	metadata_id character varying,

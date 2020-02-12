@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_metadatbatch(text)
 
--- DROP FUNCTION public.dfo_metadatbatch(text);
+DROP FUNCTION public.dfo_metadatbatch(text);
 
 CREATE OR REPLACE FUNCTION public.dfo_metadatbatch(
 	rastertable text)

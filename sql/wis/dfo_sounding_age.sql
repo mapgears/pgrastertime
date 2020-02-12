@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_sounding_age(integer)
 
--- DROP FUNCTION public.dfo_sounding_age(integer);
+DROP FUNCTION public.dfo_sounding_age(integer);
 
 CREATE OR REPLACE FUNCTION public.dfo_sounding_age(
 	in_year integer)

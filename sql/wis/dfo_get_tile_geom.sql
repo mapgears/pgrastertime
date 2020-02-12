@@ -1,6 +1,5 @@
 -- FUNCTION: public.dfo_get_tile_geom(raster)
-
--- DROP FUNCTION public.dfo_get_tile_geom(raster);
+DROP FUNCTION public.dfo_get_tile_geom(raster);
 
 CREATE OR REPLACE FUNCTION public.dfo_get_tile_geom(
 	rastercol raster)

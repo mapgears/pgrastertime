@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_sounding_surface(character varying, text)
 
--- DROP FUNCTION public.dfo_sounding_surface(character varying, text);
+DROP FUNCTION public.dfo_sounding_surface(character varying, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_sounding_surface(
 	tablename character varying,
@@ -51,5 +51,3 @@ BEGIN
 END;
 $BODY$;
 
-ALTER FUNCTION public.dfo_sounding_surface(character varying, text)
-    OWNER TO stecyr;

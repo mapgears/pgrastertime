@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_volume(text, text, text)
 
--- DROP FUNCTION public.dfo_volume(text, text, text);
+DROP FUNCTION public.dfo_volume(text, text, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_volume(
 	in_tablename text,
@@ -129,6 +129,3 @@ INSERT INTO volumes_computation_results   SELECT   in_gabarit  ,   in_sounding ,
 return 'OK';
 END;
 $BODY$;
-
-ALTER FUNCTION public.dfo_volume(text, text, text)
-    OWNER TO stecyr;

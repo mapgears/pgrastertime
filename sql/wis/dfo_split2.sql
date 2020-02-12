@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_split2(geometry[], text)
 
--- DROP FUNCTION public.dfo_split2(geometry[], text);
+DROP FUNCTION public.dfo_split2(geometry[], text);
 
 CREATE OR REPLACE FUNCTION public.dfo_split2(
 	in_geom geometry[],
@@ -78,6 +78,3 @@ INSERT INTO  tmp_poly_result(geom) select geom from poly_divided;
 end loop;
 END;
 $BODY$;
-
-ALTER FUNCTION public.dfo_split2(geometry[], text)
-    OWNER TO stecyr;

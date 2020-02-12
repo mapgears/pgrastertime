@@ -1,6 +1,6 @@
 -- FUNCTION: public.partition_insert_triggerv2()
 
--- DROP FUNCTION public.partition_insert_triggerv2();
+DROP FUNCTION public.partition_insert_triggerv2();
 
 CREATE FUNCTION public.partition_insert_triggerv2()
     RETURNS trigger

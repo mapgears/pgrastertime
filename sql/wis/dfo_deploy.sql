@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_deploy(text)
 
--- DROP FUNCTION public.dfo_deploy(text);
+DROP FUNCTION public.dfo_deploy(text);
 
 CREATE OR REPLACE FUNCTION public.dfo_deploy(
 	rastertable text)

@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_update_soundings_tables(text)
 
--- DROP FUNCTION public.dfo_update_soundings_tables(text);
+DROP FUNCTION public.dfo_update_soundings_tables(text);
 
 CREATE OR REPLACE FUNCTION public.dfo_update_soundings_tables(
 	rastertable text)

@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_addtoheatmap(integer[], integer[], integer)
 
--- DROP FUNCTION public.dfo_addtoheatmap(integer[], integer[], integer);
+DROP FUNCTION public.dfo_addtoheatmap(integer[], integer[], integer);
 
 CREATE OR REPLACE FUNCTION public.dfo_addtoheatmap(
 	_coordx integer[],
@@ -34,6 +34,3 @@ END LOOP;
 END;
 
 $BODY$;
-
-ALTER FUNCTION public.dfo_addtoheatmap(integer[], integer[], integer)
-    OWNER TO stecyr;

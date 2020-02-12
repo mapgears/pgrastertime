@@ -1,6 +1,6 @@
 -- FUNCTION: public.dfo_split(geometry, text)
 
--- DROP FUNCTION public.dfo_split(geometry, text);
+DROP FUNCTION public.dfo_split(geometry, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_split(
 	in_geom geometry,
@@ -76,5 +76,3 @@ end loop;
 END;
 $BODY$;
 
-ALTER FUNCTION public.dfo_split(geometry, text)
-    OWNER TO stecyr;
