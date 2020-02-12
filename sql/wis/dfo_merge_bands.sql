@@ -1,22 +1,31 @@
+-- FUNCTION: public.dfo_merge_bands(text, text)
+
+DROP FUNCTION public.dfo_merge_bands(text, text);
+
 CREATE OR REPLACE FUNCTION public.dfo_merge_bands(
 	rastertable text,
 	filename text)
-    RETURNS void
-    LANGUAGE 'plpgsql'
-
-    COST 100
-    VOLATILE 
+RETURNS text
+LANGUAGE 'plpgsql'
+COST 100
+VOLATILE 
 AS $BODY$
 
-	DECLARE
-      rastcol text;
-	  strsql text;
-	  rastTypes text[] = array['mean','stddev','density'];
-	  rastType text;
-	BEGIN
-	--Merging all bands to the "depth" tiles
+DECLARE
+    rastcol text;
+    strsql text;
+    rastTypes text[] = array['mean','stddev','density'];
+    rastType text;
+	rtn text;
+	msg text;
+	deleted_rows integer;
+	i integer;
+BEGIN
+    
+	--Get raster field name
 	SELECT r_raster_column FROM raster_columns WHERE r_table_name = rastertable INTO rastcol; 
-     
+    deleted_rows = 0;
+	--Merging all bands to the "depth" tiles
     FOREACH rastType IN ARRAY rastTypes
 	LOOP
      
@@ -29,19 +38,32 @@ AS $BODY$
 								AND o.filename  LIKE ',quote_literal(filename||'%'||rastType||'.tiff'),' 
 								AND o.resolution=d.resolution) sr
 						 WHERE sr.id=u.id');
-    	raise notice '%  ',strsql;
+		msg := 'Add band '|| rastType || ' in raster column with :'|| strsql;
+    	RAISE DEBUG '%', msg;
+		
 		EXECUTE strsql;
+		
+		-- log for output to user...
+		strsql = concat('SELECT count(*) FROM  ',rastertable,' WHERE filename  LIKE ',quote_literal(filename||'%'||rastType||'.tiff'));
+		RAISE DEBUG 'Log %', strsql;
+		EXECUTE strsql INTO i;
+		deleted_rows := i + deleted_rows;
 		
 		--delte  'rastType' band from table
 		strsql = concat('DELETE FROM  ',rastertable,' WHERE filename  LIKE ',quote_literal(filename||'%'||rastType||'.tiff'));
-		raise notice '%  ',strsql;
+		msg := 'Delete rows of '|| rastType || ' in '|| rastertable || 'table  with :'|| strsql;
+    	RAISE DEBUG '%', msg;
+		
 		EXECUTE strsql;
+
 	END LOOP;
-
-  exception when others then
-
-      raise notice ' % ', SQLERRM;
+	
+	rtn := 'Delete total of ' || deleted_rows || ' rows from ' || rastertable || ' table, merged into band in raster field.';
+    RETURN rtn;
+	
+    EXCEPTION WHEN OTHERS THEN
+      RAISE NOTICE ' % ', SQLERRM;
 
 END;
-
 $BODY$;
+

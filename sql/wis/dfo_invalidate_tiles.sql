@@ -1,8 +1,11 @@
+-- FUNCTION: public.dfo_invalidate_tiles(character varying, character varying, boolean)
 
-CREATE OR REPLACE FUNCTION public.dfo_most_recent(
-	filename character varying,
+-- DROP FUNCTION public.dfo_invalidate_tiles(character varying, character varying, boolean);
+
+CREATE OR REPLACE FUNCTION public.dfo_invalidate_tiles(
+	metadata_id character varying,
 	tablename character varying,
-	manage_older boolean default true)
+	manage_older boolean DEFAULT true)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -23,13 +26,12 @@ BEGIN
 
 /**Determine all tiles older than the inserted ones that have to be invalidated **/
 	EXECUTE concat('create temporary table tmp_to_invalidate as 
-	with t as ( SELECT s.id,max(lower(snew.sys_period)) as date , st_area( st_difference( s.tile_geom, st_union(snew.tile_geom)))=0 as a --, st_union(snew.tile_geom), s.tile_geom, st_area( st_difference( s.tile_geom, st_union(snew.tile_geom)))=0,st_difference( s.tile_geom, st_union(snew.tile_geom))  
+	with t as ( SELECT s.id,max(lower(snew.sys_period)) as date , st_area( st_difference( s.tile_geom, st_union(snew.tile_geom)))=0 as a 
 	from ',tablename,' s 
 		join ',tablename,' snew on st_intersects(s.tile_geom,snew.tile_geom)
-	where snew.filename like ',quote_literal(filename||'%'),'
+	where snew.metadata_id = ',quote_literal(metadata_id),'
 		and lower (s.sys_period) < lower(snew.sys_period)  --older tiles
 		and (upper(s.sys_period) is null OR upper(s.sys_period) > lower(snew.sys_period))  --still valid or  invalidate by a most recent than the inserted one.
-		and s.resolution=snew.resolution
 	group by s.id,s.tile_geom)
 	select id ,date  from t where a is true;
 	');
@@ -37,7 +39,7 @@ BEGIN
 /**If the inserted tiles are older than some existing tiles**/
 if manage_older then 
 	query_init:=concat( 'SELECT id,tile_geom,sys_period from ',tablename,'
-						WHERE filename like ',quote_literal(filename||'%'));
+						WHERE metadata_id = ',quote_literal(metadata_id));
 	raise notice '%', query_init;
 	--For all inserted tiles													   
 	FOR rec1 IN EXECUTE query_init
