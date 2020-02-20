@@ -3,8 +3,8 @@
 HOST=localhost
 PORT=5432
 DB=pgrastertime
-USER=loader
-export PGPASSWORD=loader
+USER=*****
+export PGPASSWORD=****
 
 if [[ $# != 2 ]]; then
     echo "Load in postgresql files located on disk"
