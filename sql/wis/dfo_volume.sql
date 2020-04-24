@@ -100,7 +100,8 @@ DROP TABLE IF EXISTS vol_result_tmp ;
 CREATE TEMPORARY TABLE vol_result_tmp  as 
 SELECT drag_id,
 		sum(st_area (st_polygon )) as area_to_dredge, 
-		(st_summarystatsagg(raster,1,true)).sum as volume_to_dredge,
+		
+		
 		(st_summarystatsagg(raster,1,true)).count* (max(st_scalex(raster))*max(st_scalex(raster)) * 0.2) as overdredged_volume,
 	 	0::numeric as combined_volume,
 		0::numeric as area_to_fill,
