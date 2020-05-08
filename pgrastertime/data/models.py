@@ -1,5 +1,6 @@
 import geoalchemy2
 import sqlalchemy as sa
+import tempfile
 
 from pgrastertime import CONFIG, ROOT
 from pgrastertime.compat import fspath
@@ -109,14 +110,16 @@ class SQLModel:
 
     def switchTemplateTableName(self, filename):
         # need to replace template table name 'pgrastrtime'
-        tmpfile = "/tmp/pgrastmp.sql"
+        pf_ , tmpfile = tempfile.mkstemp()
+        ## tmpfile = "/tmp/pgrastmp.sql"
+        
         with open(filename) as f:
             sqlfile = f.readlines()
             f.close
             patch = [l.replace("pgrastertime", self.tablename) for l in sqlfile]
             with open(tmpfile,"w") as w:
                 w.write("".join(patch))
-                f.close
+                w.close
                 return tmpfile
         return ''
 
