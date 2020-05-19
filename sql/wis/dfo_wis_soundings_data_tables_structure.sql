@@ -4,13 +4,13 @@
 -- ---------------------
 
 SET client_min_messages TO WARNING;
-CREATE SCHEMA z_sm3;
+CREATE SCHEMA schema2rename;
 
 -- ---------------------
 -- PARTITIONED TRIGGER
 -- ---------------------
 
-CREATE FUNCTION z_sm3.wis_partition_insert()
+CREATE FUNCTION schema2rename.wis_partition_insert()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
@@ -23,59 +23,59 @@ BEGIN
         --raise notice ' i: % : %', new.id, t_region ;
         IF t_region ='Atlantic' THEN
                 IF ( NEW.resolution = 0.25 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_25cm VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_25cm VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 0.5 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_50cm VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_50cm VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 1 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_1m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_1m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 2 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_2m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_2m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 4 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_4m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_4m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 8 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_8m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_8m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 16 ) THEN
-                        INSERT INTO z_sm3.soundings_atlantic_16m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_atlantic_16m VALUES (NEW.*);
                 END IF;
         ELSEIF t_region ='CA' THEN
                 IF ( NEW.resolution = 0.25 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_25cm VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_25cm VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 0.5 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_50cm VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_50cm VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 1 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_1m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_1m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 2 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_2m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_2m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 4 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_4m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_4m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 8 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_8m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_8m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 16 ) THEN
-                        INSERT INTO z_sm3.soundings_vnsl_16m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_vnsl_16m VALUES (NEW.*);
                 END IF;
         ELSEIF  t_region = 'Western' THEN
                 IF ( NEW.resolution = 0.25 ) THEN
-                        INSERT INTO z_sm3.soundings_western_25cm VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_25cm VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 0.5 ) THEN
-                        INSERT INTO z_sm3.soundings_western_50cm VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_50cm VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 1 ) THEN
-                        INSERT INTO z_sm3.soundings_western_1m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_1m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 2 ) THEN
-                        INSERT INTO z_sm3.soundings_western_2m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_2m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 4 ) THEN
-                        INSERT INTO z_sm3.soundings_western_4m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_4m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 8 ) THEN
-                        INSERT INTO z_sm3.soundings_western_8m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_8m VALUES (NEW.*);
                 ELSIF ( NEW.resolution = 16 ) THEN
-                        INSERT INTO z_sm3.soundings_western_16m VALUES (NEW.*);
+                        INSERT INTO schema2rename.soundings_western_16m VALUES (NEW.*);
                 END IF;
         ELSE
-                INSERT INTO z_sm3.soundings_no_region VALUES (NEW.*);
+                INSERT INTO schema2rename.soundings_no_region VALUES (NEW.*);
         END IF;
         RETURN NULL;
         exception when others then
-                INSERT INTO z_sm3.soundings_error VALUES (NEW.*);
-                insert into z_sm3.soundings_error_reason values(new.id, sqlerrm );
+                INSERT INTO schema2rename.soundings_error VALUES (NEW.*);
+                insert into schema2rename.soundings_error_reason values(new.id, sqlerrm );
                 raise notice ' % ', SQLERRM;
                 RETURN NULL;
 END;
@@ -85,7 +85,7 @@ $BODY$;
 -- Util table
 -- ---------------------
 
-CREATE TABLE z_sm3.soundings_no_region(
+CREATE TABLE schema2rename.soundings_no_region(
     id serial,
     tile_id bigint,
     rast raster,
@@ -98,17 +98,17 @@ CREATE TABLE z_sm3.soundings_no_region(
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.sounding_age (
+CREATE TABLE schema2rename.sounding_age (
     year double precision,
     geom geometry(Polygon,3979)
 );
 
-CREATE TABLE z_sm3.sounding_age_year (
+CREATE TABLE schema2rename.sounding_age_year (
     geom geometry(MultiPolygon,3979),
     year double precision
 );
 
-CREATE TABLE z_sm3.soundings_error (
+CREATE TABLE schema2rename.soundings_error (
     id integer NOT NULL,
     tile_id bigint,
     rast raster,
@@ -124,7 +124,7 @@ CREATE TABLE z_sm3.soundings_error (
 -- ---------------------
 -- Routing table
 -- ---------------------
-CREATE SEQUENCE z_sm3.soundings_id_seq
+CREATE SEQUENCE schema2rename.soundings_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -132,8 +132,8 @@ CREATE SEQUENCE z_sm3.soundings_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings (
-    id integer DEFAULT nextval('z_sm3.soundings_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings (
+    id integer DEFAULT nextval('schema2rename.soundings_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -148,15 +148,15 @@ CREATE TABLE z_sm3.soundings (
 -- add trigger to this table
 CREATE TRIGGER partition_insert
     BEFORE INSERT
-    ON z_sm3.soundings
+    ON schema2rename.soundings
     FOR EACH ROW
-    EXECUTE PROCEDURE z_sm3.wis_partition_insert();
+    EXECUTE PROCEDURE schema2rename.wis_partition_insert();
 
 -- ---------------------
 -- 25cm 
 -- ---------------------
 
-CREATE SEQUENCE z_sm3.soundings_25cm_id_seq
+CREATE SEQUENCE schema2rename.soundings_25cm_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -164,8 +164,8 @@ CREATE SEQUENCE z_sm3.soundings_25cm_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_25cm (
-    id integer DEFAULT nextval('z_sm3.soundings_25cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_25cm (
+    id integer DEFAULT nextval('schema2rename.soundings_25cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -177,8 +177,8 @@ CREATE TABLE z_sm3.soundings_25cm (
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.soundings_atlantic_25cm (
-    id integer DEFAULT nextval('z_sm3.soundings_25cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_25cm (
+    id integer DEFAULT nextval('schema2rename.soundings_25cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -189,10 +189,10 @@ CREATE TABLE z_sm3.soundings_atlantic_25cm (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_25cm);
+INHERITS (schema2rename.soundings_25cm);
 
-CREATE TABLE z_sm3.soundings_western_25cm (
-    id integer DEFAULT nextval('z_sm3.soundings_25cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_25cm (
+    id integer DEFAULT nextval('schema2rename.soundings_25cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -203,10 +203,10 @@ CREATE TABLE z_sm3.soundings_western_25cm (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_25cm);
+INHERITS (schema2rename.soundings_25cm);
 
-CREATE TABLE z_sm3.soundings_vnsl_25cm (
-    id integer DEFAULT nextval('z_sm3.soundings_25cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_25cm (
+    id integer DEFAULT nextval('schema2rename.soundings_25cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -217,12 +217,12 @@ CREATE TABLE z_sm3.soundings_vnsl_25cm (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_25cm);
+INHERITS (schema2rename.soundings_25cm);
 
 -- ---------------------
 -- 50cm 
 -- ---------------------
-CREATE SEQUENCE z_sm3.soundings_50cm_id_seq
+CREATE SEQUENCE schema2rename.soundings_50cm_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -230,8 +230,8 @@ CREATE SEQUENCE z_sm3.soundings_50cm_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_50cm (
-    id integer DEFAULT nextval('z_sm3.soundings_50cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_50cm (
+    id integer DEFAULT nextval('schema2rename.soundings_50cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -243,8 +243,8 @@ CREATE TABLE z_sm3.soundings_50cm (
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.soundings_atlantic_50cm (
-    id integer DEFAULT nextval('z_sm3.soundings_50cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_50cm (
+    id integer DEFAULT nextval('schema2rename.soundings_50cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -255,10 +255,10 @@ CREATE TABLE z_sm3.soundings_atlantic_50cm (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_50cm);
+INHERITS (schema2rename.soundings_50cm);
 
-CREATE TABLE z_sm3.soundings_vnsl_50cm (
-    id integer DEFAULT nextval('z_sm3.soundings_50cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_50cm (
+    id integer DEFAULT nextval('schema2rename.soundings_50cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -269,10 +269,10 @@ CREATE TABLE z_sm3.soundings_vnsl_50cm (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_50cm);
+INHERITS (schema2rename.soundings_50cm);
 
-CREATE TABLE z_sm3.soundings_western_50cm (
-    id integer DEFAULT nextval('z_sm3.soundings_50cm_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_50cm (
+    id integer DEFAULT nextval('schema2rename.soundings_50cm_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -283,13 +283,13 @@ CREATE TABLE z_sm3.soundings_western_50cm (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_50cm);
+INHERITS (schema2rename.soundings_50cm);
 
 -- ---------------------
 -- 1m 
 -- ---------------------
 
-CREATE SEQUENCE z_sm3.soundings_1m_id_seq
+CREATE SEQUENCE schema2rename.soundings_1m_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -297,8 +297,8 @@ CREATE SEQUENCE z_sm3.soundings_1m_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_1m (
-    id integer DEFAULT nextval('z_sm3.soundings_1m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_1m (
+    id integer DEFAULT nextval('schema2rename.soundings_1m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -310,8 +310,8 @@ CREATE TABLE z_sm3.soundings_1m (
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.soundings_vnsl_1m (
-    id integer DEFAULT nextval('z_sm3.soundings_1m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_1m (
+    id integer DEFAULT nextval('schema2rename.soundings_1m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -322,10 +322,10 @@ CREATE TABLE z_sm3.soundings_vnsl_1m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_1m);
+INHERITS (schema2rename.soundings_1m);
 
-CREATE TABLE z_sm3.soundings_atlantic_1m (
-    id integer DEFAULT nextval('z_sm3.soundings_1m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_1m (
+    id integer DEFAULT nextval('schema2rename.soundings_1m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -336,10 +336,10 @@ CREATE TABLE z_sm3.soundings_atlantic_1m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_1m);
+INHERITS (schema2rename.soundings_1m);
 
-CREATE TABLE z_sm3.soundings_western_1m (
-    id integer DEFAULT nextval('z_sm3.soundings_1m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_1m (
+    id integer DEFAULT nextval('schema2rename.soundings_1m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -350,13 +350,13 @@ CREATE TABLE z_sm3.soundings_western_1m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_1m);
+INHERITS (schema2rename.soundings_1m);
 
 -- ---------------------
 -- 2m 
 -- ---------------------
 
-CREATE SEQUENCE z_sm3.soundings_2m_id_seq
+CREATE SEQUENCE schema2rename.soundings_2m_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -364,8 +364,8 @@ CREATE SEQUENCE z_sm3.soundings_2m_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_2m (
-    id integer DEFAULT nextval('z_sm3.soundings_2m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_2m (
+    id integer DEFAULT nextval('schema2rename.soundings_2m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -377,8 +377,8 @@ CREATE TABLE z_sm3.soundings_2m (
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.soundings_atlantic_2m (
-    id integer DEFAULT nextval('z_sm3.soundings_2m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_2m (
+    id integer DEFAULT nextval('schema2rename.soundings_2m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -389,10 +389,10 @@ CREATE TABLE z_sm3.soundings_atlantic_2m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_2m);
+INHERITS (schema2rename.soundings_2m);
 
-CREATE TABLE z_sm3.soundings_vnsl_2m (
-    id integer DEFAULT nextval('z_sm3.soundings_2m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_2m (
+    id integer DEFAULT nextval('schema2rename.soundings_2m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -403,10 +403,10 @@ CREATE TABLE z_sm3.soundings_vnsl_2m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_2m);
+INHERITS (schema2rename.soundings_2m);
 
-CREATE TABLE z_sm3.soundings_western_2m (
-    id integer DEFAULT nextval('z_sm3.soundings_2m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_2m (
+    id integer DEFAULT nextval('schema2rename.soundings_2m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -417,13 +417,13 @@ CREATE TABLE z_sm3.soundings_western_2m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_2m);
+INHERITS (schema2rename.soundings_2m);
 
 -- ---------------------
 -- 4m 
 -- ---------------------
 
-CREATE SEQUENCE z_sm3.soundings_4m_id_seq
+CREATE SEQUENCE schema2rename.soundings_4m_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -431,8 +431,8 @@ CREATE SEQUENCE z_sm3.soundings_4m_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_4m (
-    id integer DEFAULT nextval('z_sm3.soundings_4m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_4m (
+    id integer DEFAULT nextval('schema2rename.soundings_4m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -444,8 +444,8 @@ CREATE TABLE z_sm3.soundings_4m (
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.soundings_atlantic_4m (
-    id integer DEFAULT nextval('z_sm3.soundings_4m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_4m (
+    id integer DEFAULT nextval('schema2rename.soundings_4m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -456,10 +456,10 @@ CREATE TABLE z_sm3.soundings_atlantic_4m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_4m);
+INHERITS (schema2rename.soundings_4m);
 
-CREATE TABLE z_sm3.soundings_vnsl_4m (
-    id integer DEFAULT nextval('z_sm3.soundings_4m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_4m (
+    id integer DEFAULT nextval('schema2rename.soundings_4m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -470,10 +470,10 @@ CREATE TABLE z_sm3.soundings_vnsl_4m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_4m);
+INHERITS (schema2rename.soundings_4m);
 
-CREATE TABLE z_sm3.soundings_western_4m (
-    id integer DEFAULT nextval('z_sm3.soundings_4m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_4m (
+    id integer DEFAULT nextval('schema2rename.soundings_4m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -484,13 +484,13 @@ CREATE TABLE z_sm3.soundings_western_4m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_4m);
+INHERITS (schema2rename.soundings_4m);
 
 -- ---------------------
 -- 8m 
 -- ---------------------
 
-CREATE SEQUENCE z_sm3.soundings_8m_id_seq
+CREATE SEQUENCE schema2rename.soundings_8m_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -498,8 +498,8 @@ CREATE SEQUENCE z_sm3.soundings_8m_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_8m (
-    id integer DEFAULT nextval('z_sm3.soundings_8m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_8m (
+    id integer DEFAULT nextval('schema2rename.soundings_8m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -512,8 +512,8 @@ CREATE TABLE z_sm3.soundings_8m (
 );
 
 
-CREATE TABLE z_sm3.soundings_atlantic_8m (
-    id integer DEFAULT nextval('z_sm3.soundings_8m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_8m (
+    id integer DEFAULT nextval('schema2rename.soundings_8m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -524,10 +524,10 @@ CREATE TABLE z_sm3.soundings_atlantic_8m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_8m);
+INHERITS (schema2rename.soundings_8m);
 
-CREATE TABLE z_sm3.soundings_vnsl_8m (
-    id integer DEFAULT nextval('z_sm3.soundings_8m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_8m (
+    id integer DEFAULT nextval('schema2rename.soundings_8m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -538,10 +538,10 @@ CREATE TABLE z_sm3.soundings_vnsl_8m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_8m);
+INHERITS (schema2rename.soundings_8m);
 
-CREATE TABLE z_sm3.soundings_western_8m (
-    id integer DEFAULT nextval('z_sm3.soundings_8m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_8m (
+    id integer DEFAULT nextval('schema2rename.soundings_8m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -552,12 +552,12 @@ CREATE TABLE z_sm3.soundings_western_8m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_8m);
+INHERITS (schema2rename.soundings_8m);
 
 -- ---------------------
 -- 16m 
 -- ---------------------
-CREATE SEQUENCE z_sm3.soundings_16m_id_seq
+CREATE SEQUENCE schema2rename.soundings_16m_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -565,8 +565,8 @@ CREATE SEQUENCE z_sm3.soundings_16m_id_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE z_sm3.soundings_16m (
-    id integer DEFAULT nextval('z_sm3.soundings_16m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_16m (
+    id integer DEFAULT nextval('schema2rename.soundings_16m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -578,8 +578,8 @@ CREATE TABLE z_sm3.soundings_16m (
     shoal_geom geometry(MultiPolygon,3979)
 );
 
-CREATE TABLE z_sm3.soundings_vnsl_16m (
-    id integer DEFAULT nextval('z_sm3.soundings_16m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_vnsl_16m (
+    id integer DEFAULT nextval('schema2rename.soundings_16m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -590,10 +590,10 @@ CREATE TABLE z_sm3.soundings_vnsl_16m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_16m);
+INHERITS (schema2rename.soundings_16m);
 
-CREATE TABLE z_sm3.soundings_atlantic_16m (
-    id integer DEFAULT nextval('z_sm3.soundings_16m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_atlantic_16m (
+    id integer DEFAULT nextval('schema2rename.soundings_16m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -604,10 +604,10 @@ CREATE TABLE z_sm3.soundings_atlantic_16m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_16m);
+INHERITS (schema2rename.soundings_16m);
 
-CREATE TABLE z_sm3.soundings_western_16m (
-    id integer DEFAULT nextval('z_sm3.soundings_16m_id_seq'::regclass),
+CREATE TABLE schema2rename.soundings_western_16m (
+    id integer DEFAULT nextval('schema2rename.soundings_16m_id_seq'::regclass),
     tile_id bigint,
     rast raster,
     resolution double precision,
@@ -618,226 +618,226 @@ CREATE TABLE z_sm3.soundings_western_16m (
     metadata_id character varying(100),
     shoal_geom geometry(MultiPolygon,3979)
 )
-INHERITS (z_sm3.soundings_16m);
+INHERITS (schema2rename.soundings_16m);
 
 -- -----------------
 -- PRIMARY KEY
 -- -----------------
-ALTER TABLE ONLY z_sm3.soundings_25cm ADD CONSTRAINT soundings_25cm_pk PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_50cm ADD CONSTRAINT soundings_50cm_pk PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_1m ADD CONSTRAINT soundings_1m_pk PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_2m  ADD CONSTRAINT soundings_2m_pk PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_4m ADD CONSTRAINT soundings_4m_pk PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_8m ADD CONSTRAINT soundings_8m_pk PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_16m ADD CONSTRAINT soundings_16m_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_25cm ADD CONSTRAINT soundings_25cm_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_50cm ADD CONSTRAINT soundings_50cm_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_1m ADD CONSTRAINT soundings_1m_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_2m  ADD CONSTRAINT soundings_2m_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_4m ADD CONSTRAINT soundings_4m_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_8m ADD CONSTRAINT soundings_8m_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_16m ADD CONSTRAINT soundings_16m_pk PRIMARY KEY (id);
 
-ALTER TABLE ONLY z_sm3.soundings_atlantic_25cm ADD CONSTRAINT soundings_atlantic_25cm_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_atlantic_50cm ADD CONSTRAINT soundings_atlantic_50cm_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_atlantic_1m ADD CONSTRAINT soundings_atlantic_1m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_atlantic_2m ADD CONSTRAINT soundings_atlantic_2m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_atlantic_4m ADD CONSTRAINT soundings_atlantic_4m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_atlantic_8m ADD CONSTRAINT soundings_atlantic_8m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_atlantic_16m ADD CONSTRAINT soundings_atlantic_16m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_25cm ADD CONSTRAINT soundings_atlantic_25cm_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_50cm ADD CONSTRAINT soundings_atlantic_50cm_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_1m ADD CONSTRAINT soundings_atlantic_1m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_2m ADD CONSTRAINT soundings_atlantic_2m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_4m ADD CONSTRAINT soundings_atlantic_4m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_8m ADD CONSTRAINT soundings_atlantic_8m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_atlantic_16m ADD CONSTRAINT soundings_atlantic_16m_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY z_sm3.soundings_vnsl_25cm ADD CONSTRAINT soundings_vnsl_25cm_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_vnsl_50cm ADD CONSTRAINT soundings_vnsl_50cm_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_vnsl_1m ADD CONSTRAINT soundings_vnsl_1m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_vnsl_2m ADD CONSTRAINT soundings_vnsl_2m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_vnsl_4m ADD CONSTRAINT soundings_vnsl_4m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_vnsl_8m ADD CONSTRAINT soundings_vnsl_8m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_vnsl_16m ADD CONSTRAINT soundings_vnsl_16m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_25cm ADD CONSTRAINT soundings_vnsl_25cm_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_50cm ADD CONSTRAINT soundings_vnsl_50cm_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_1m ADD CONSTRAINT soundings_vnsl_1m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_2m ADD CONSTRAINT soundings_vnsl_2m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_4m ADD CONSTRAINT soundings_vnsl_4m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_8m ADD CONSTRAINT soundings_vnsl_8m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_vnsl_16m ADD CONSTRAINT soundings_vnsl_16m_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY z_sm3.soundings_western_25cm ADD CONSTRAINT soundings_western_25cm_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_western_50cm ADD CONSTRAINT soundings_western_50cm_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_western_1m ADD CONSTRAINT soundings_western_1m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_western_2m ADD CONSTRAINT soundings_western_2m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_western_4m ADD CONSTRAINT soundings_western_4m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_western_8m ADD CONSTRAINT soundings_western_8m_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY z_sm3.soundings_western_16m ADD CONSTRAINT soundings_western_16m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_25cm ADD CONSTRAINT soundings_western_25cm_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_50cm ADD CONSTRAINT soundings_western_50cm_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_1m ADD CONSTRAINT soundings_western_1m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_2m ADD CONSTRAINT soundings_western_2m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_4m ADD CONSTRAINT soundings_western_4m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_8m ADD CONSTRAINT soundings_western_8m_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_western_16m ADD CONSTRAINT soundings_western_16m_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY z_sm3.soundings_error ADD CONSTRAINT soundings_error_pk PRIMARY KEY (id);
+ALTER TABLE ONLY schema2rename.soundings_error ADD CONSTRAINT soundings_error_pk PRIMARY KEY (id);
 
 
 -- -----------------
 -- INDEX
 -- -----------------
-CREATE INDEX soundings_25cm_lower_sysperiod ON z_sm3.soundings_25cm USING btree (lower(sys_period));
-CREATE INDEX soundings_25cm_metadata_id ON z_sm3.soundings_25cm USING btree (metadata_id);
-CREATE INDEX soundings_25cm_raster ON z_sm3.soundings_25cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_25cm_sysperiod ON z_sm3.soundings_25cm USING gist (sys_period);
-CREATE INDEX soundings_25cm_tile_extent_idx ON z_sm3.soundings_25cm USING gist (tile_extent);
-CREATE INDEX soundings_25cm_tile_geom_idx ON z_sm3.soundings_25cm USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_25cm_lower_sysperiod ON z_sm3.soundings_atlantic_25cm USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_25cm_metadata_id ON z_sm3.soundings_atlantic_25cm USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_25cm_raster ON z_sm3.soundings_atlantic_25cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_25cm_sysperiod ON z_sm3.soundings_atlantic_25cm USING gist (sys_period);
-CREATE INDEX soundings_atlantic_25cm_tile_extent_idx ON z_sm3.soundings_atlantic_25cm USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_25cm_tile_geom_idx ON z_sm3.soundings_atlantic_25cm USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_25cm_lower_sysperiod ON z_sm3.soundings_vnsl_25cm USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_25cm_metadata_id ON z_sm3.soundings_vnsl_25cm USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_25cm_raster ON z_sm3.soundings_vnsl_25cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_25cm_sysperiod ON z_sm3.soundings_vnsl_25cm USING gist (sys_period);
-CREATE INDEX soundings_vnsl_25cm_tile_extent_idx ON z_sm3.soundings_vnsl_25cm USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_25cm_tile_geom_idx ON z_sm3.soundings_vnsl_25cm USING gist (tile_geom);
-CREATE INDEX soundings_western_25cm_lower_sysperiod ON z_sm3.soundings_western_25cm USING btree (lower(sys_period));
-CREATE INDEX soundings_western_25cm_metadata_id ON z_sm3.soundings_western_25cm USING btree (metadata_id);
-CREATE INDEX soundings_western_25cm_raster ON z_sm3.soundings_western_25cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_25cm_sysperiod ON z_sm3.soundings_western_25cm USING gist (sys_period);
-CREATE INDEX soundings_western_25cm_tile_extent_idx ON z_sm3.soundings_western_25cm USING gist (tile_extent);
-CREATE INDEX soundings_western_25cm_tile_geom_idx ON z_sm3.soundings_western_25cm USING gist (tile_geom);
+CREATE INDEX soundings_25cm_lower_sysperiod ON schema2rename.soundings_25cm USING btree (lower(sys_period));
+CREATE INDEX soundings_25cm_metadata_id ON schema2rename.soundings_25cm USING btree (metadata_id);
+CREATE INDEX soundings_25cm_raster ON schema2rename.soundings_25cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_25cm_sysperiod ON schema2rename.soundings_25cm USING gist (sys_period);
+CREATE INDEX soundings_25cm_tile_extent_idx ON schema2rename.soundings_25cm USING gist (tile_extent);
+CREATE INDEX soundings_25cm_tile_geom_idx ON schema2rename.soundings_25cm USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_25cm_lower_sysperiod ON schema2rename.soundings_atlantic_25cm USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_25cm_metadata_id ON schema2rename.soundings_atlantic_25cm USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_25cm_raster ON schema2rename.soundings_atlantic_25cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_25cm_sysperiod ON schema2rename.soundings_atlantic_25cm USING gist (sys_period);
+CREATE INDEX soundings_atlantic_25cm_tile_extent_idx ON schema2rename.soundings_atlantic_25cm USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_25cm_tile_geom_idx ON schema2rename.soundings_atlantic_25cm USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_25cm_lower_sysperiod ON schema2rename.soundings_vnsl_25cm USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_25cm_metadata_id ON schema2rename.soundings_vnsl_25cm USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_25cm_raster ON schema2rename.soundings_vnsl_25cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_25cm_sysperiod ON schema2rename.soundings_vnsl_25cm USING gist (sys_period);
+CREATE INDEX soundings_vnsl_25cm_tile_extent_idx ON schema2rename.soundings_vnsl_25cm USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_25cm_tile_geom_idx ON schema2rename.soundings_vnsl_25cm USING gist (tile_geom);
+CREATE INDEX soundings_western_25cm_lower_sysperiod ON schema2rename.soundings_western_25cm USING btree (lower(sys_period));
+CREATE INDEX soundings_western_25cm_metadata_id ON schema2rename.soundings_western_25cm USING btree (metadata_id);
+CREATE INDEX soundings_western_25cm_raster ON schema2rename.soundings_western_25cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_25cm_sysperiod ON schema2rename.soundings_western_25cm USING gist (sys_period);
+CREATE INDEX soundings_western_25cm_tile_extent_idx ON schema2rename.soundings_western_25cm USING gist (tile_extent);
+CREATE INDEX soundings_western_25cm_tile_geom_idx ON schema2rename.soundings_western_25cm USING gist (tile_geom);
 
-CREATE INDEX soundings_50cm_lower_sysperiod ON z_sm3.soundings_50cm USING btree (lower(sys_period));
-CREATE INDEX soundings_50cm_metadata_id ON z_sm3.soundings_50cm USING btree (metadata_id);
-CREATE INDEX soundings_50cm_raster ON z_sm3.soundings_50cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_50cm_sysperiod ON z_sm3.soundings_50cm USING gist (sys_period);
-CREATE INDEX soundings_50cm_tile_extent_idx ON z_sm3.soundings_50cm USING gist (tile_extent);
-CREATE INDEX soundings_50cm_tile_geom_idx ON z_sm3.soundings_50cm USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_50cm_lower_sysperiod ON z_sm3.soundings_atlantic_50cm USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_50cm_metadata_id ON z_sm3.soundings_atlantic_50cm USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_50cm_raster ON z_sm3.soundings_atlantic_50cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_50cm_sysperiod ON z_sm3.soundings_atlantic_50cm USING gist (sys_period);
-CREATE INDEX soundings_atlantic_50cm_tile_extent_idx ON z_sm3.soundings_atlantic_50cm USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_50cm_tile_geom_idx ON z_sm3.soundings_atlantic_50cm USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_50cm_lower_sysperiod ON z_sm3.soundings_vnsl_50cm USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_50cm_metadata_id ON z_sm3.soundings_vnsl_50cm USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_50cm_raster ON z_sm3.soundings_vnsl_50cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_50cm_sysperiod ON z_sm3.soundings_vnsl_50cm USING gist (sys_period);
-CREATE INDEX soundings_vnsl_50cm_tile_extent_idx ON z_sm3.soundings_vnsl_50cm USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_50cm_tile_geom_idx ON z_sm3.soundings_vnsl_50cm USING gist (tile_geom);
-CREATE INDEX soundings_western_50cm_lower_sysperiod ON z_sm3.soundings_western_50cm USING btree (lower(sys_period));
-CREATE INDEX soundings_western_50cm_metadata_id ON z_sm3.soundings_western_50cm USING btree (metadata_id);
-CREATE INDEX soundings_western_50cm_raster ON z_sm3.soundings_western_50cm USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_50cm_sysperiod ON z_sm3.soundings_western_50cm USING gist (sys_period);
-CREATE INDEX soundings_western_50cm_tile_extent_idx ON z_sm3.soundings_western_50cm USING gist (tile_extent);
-CREATE INDEX soundings_western_50cm_tile_geom_idx ON z_sm3.soundings_western_50cm USING gist (tile_geom);
+CREATE INDEX soundings_50cm_lower_sysperiod ON schema2rename.soundings_50cm USING btree (lower(sys_period));
+CREATE INDEX soundings_50cm_metadata_id ON schema2rename.soundings_50cm USING btree (metadata_id);
+CREATE INDEX soundings_50cm_raster ON schema2rename.soundings_50cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_50cm_sysperiod ON schema2rename.soundings_50cm USING gist (sys_period);
+CREATE INDEX soundings_50cm_tile_extent_idx ON schema2rename.soundings_50cm USING gist (tile_extent);
+CREATE INDEX soundings_50cm_tile_geom_idx ON schema2rename.soundings_50cm USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_50cm_lower_sysperiod ON schema2rename.soundings_atlantic_50cm USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_50cm_metadata_id ON schema2rename.soundings_atlantic_50cm USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_50cm_raster ON schema2rename.soundings_atlantic_50cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_50cm_sysperiod ON schema2rename.soundings_atlantic_50cm USING gist (sys_period);
+CREATE INDEX soundings_atlantic_50cm_tile_extent_idx ON schema2rename.soundings_atlantic_50cm USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_50cm_tile_geom_idx ON schema2rename.soundings_atlantic_50cm USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_50cm_lower_sysperiod ON schema2rename.soundings_vnsl_50cm USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_50cm_metadata_id ON schema2rename.soundings_vnsl_50cm USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_50cm_raster ON schema2rename.soundings_vnsl_50cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_50cm_sysperiod ON schema2rename.soundings_vnsl_50cm USING gist (sys_period);
+CREATE INDEX soundings_vnsl_50cm_tile_extent_idx ON schema2rename.soundings_vnsl_50cm USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_50cm_tile_geom_idx ON schema2rename.soundings_vnsl_50cm USING gist (tile_geom);
+CREATE INDEX soundings_western_50cm_lower_sysperiod ON schema2rename.soundings_western_50cm USING btree (lower(sys_period));
+CREATE INDEX soundings_western_50cm_metadata_id ON schema2rename.soundings_western_50cm USING btree (metadata_id);
+CREATE INDEX soundings_western_50cm_raster ON schema2rename.soundings_western_50cm USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_50cm_sysperiod ON schema2rename.soundings_western_50cm USING gist (sys_period);
+CREATE INDEX soundings_western_50cm_tile_extent_idx ON schema2rename.soundings_western_50cm USING gist (tile_extent);
+CREATE INDEX soundings_western_50cm_tile_geom_idx ON schema2rename.soundings_western_50cm USING gist (tile_geom);
 
-CREATE INDEX soundings_1m_lower_sysperiod ON z_sm3.soundings_1m USING btree (lower(sys_period));
-CREATE INDEX soundings_1m_metadata_id ON z_sm3.soundings_1m USING btree (metadata_id);
-CREATE INDEX soundings_1m_raster ON z_sm3.soundings_1m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_1m_sysperiod ON z_sm3.soundings_1m USING gist (sys_period);
-CREATE INDEX soundings_1m_tile_extent_idx ON z_sm3.soundings_1m USING gist (tile_extent);
-CREATE INDEX soundings_1m_tile_geom_idx ON z_sm3.soundings_1m USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_1m_lower_sysperiod ON z_sm3.soundings_atlantic_1m USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_1m_metadata_id ON z_sm3.soundings_atlantic_1m USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_1m_raster ON z_sm3.soundings_atlantic_1m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_1m_sysperiod ON z_sm3.soundings_atlantic_1m USING gist (sys_period);
-CREATE INDEX soundings_atlantic_1m_tile_extent_idx ON z_sm3.soundings_atlantic_1m USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_1m_tile_geom_idx ON z_sm3.soundings_atlantic_1m USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_1m_lower_sysperiod ON z_sm3.soundings_vnsl_1m USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_1m_metadata_id ON z_sm3.soundings_vnsl_1m USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_1m_raster ON z_sm3.soundings_vnsl_1m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_1m_sysperiod ON z_sm3.soundings_vnsl_1m USING gist (sys_period);
-CREATE INDEX soundings_vnsl_1m_tile_extent_idx ON z_sm3.soundings_vnsl_1m USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_1m_tile_geom_idx ON z_sm3.soundings_vnsl_1m USING gist (tile_geom);
-CREATE INDEX soundings_western_1m_lower_sysperiod ON z_sm3.soundings_western_1m USING btree (lower(sys_period));
-CREATE INDEX soundings_western_1m_metadata_id ON z_sm3.soundings_western_1m USING btree (metadata_id);
-CREATE INDEX soundings_western_1m_raster ON z_sm3.soundings_western_1m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_1m_sysperiod ON z_sm3.soundings_western_1m USING gist (sys_period);
-CREATE INDEX soundings_western_1m_tile_extent_idx ON z_sm3.soundings_western_1m USING gist (tile_extent);
-CREATE INDEX soundings_western_1m_tile_geom_idx ON z_sm3.soundings_western_1m USING gist (tile_geom);
+CREATE INDEX soundings_1m_lower_sysperiod ON schema2rename.soundings_1m USING btree (lower(sys_period));
+CREATE INDEX soundings_1m_metadata_id ON schema2rename.soundings_1m USING btree (metadata_id);
+CREATE INDEX soundings_1m_raster ON schema2rename.soundings_1m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_1m_sysperiod ON schema2rename.soundings_1m USING gist (sys_period);
+CREATE INDEX soundings_1m_tile_extent_idx ON schema2rename.soundings_1m USING gist (tile_extent);
+CREATE INDEX soundings_1m_tile_geom_idx ON schema2rename.soundings_1m USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_1m_lower_sysperiod ON schema2rename.soundings_atlantic_1m USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_1m_metadata_id ON schema2rename.soundings_atlantic_1m USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_1m_raster ON schema2rename.soundings_atlantic_1m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_1m_sysperiod ON schema2rename.soundings_atlantic_1m USING gist (sys_period);
+CREATE INDEX soundings_atlantic_1m_tile_extent_idx ON schema2rename.soundings_atlantic_1m USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_1m_tile_geom_idx ON schema2rename.soundings_atlantic_1m USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_1m_lower_sysperiod ON schema2rename.soundings_vnsl_1m USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_1m_metadata_id ON schema2rename.soundings_vnsl_1m USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_1m_raster ON schema2rename.soundings_vnsl_1m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_1m_sysperiod ON schema2rename.soundings_vnsl_1m USING gist (sys_period);
+CREATE INDEX soundings_vnsl_1m_tile_extent_idx ON schema2rename.soundings_vnsl_1m USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_1m_tile_geom_idx ON schema2rename.soundings_vnsl_1m USING gist (tile_geom);
+CREATE INDEX soundings_western_1m_lower_sysperiod ON schema2rename.soundings_western_1m USING btree (lower(sys_period));
+CREATE INDEX soundings_western_1m_metadata_id ON schema2rename.soundings_western_1m USING btree (metadata_id);
+CREATE INDEX soundings_western_1m_raster ON schema2rename.soundings_western_1m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_1m_sysperiod ON schema2rename.soundings_western_1m USING gist (sys_period);
+CREATE INDEX soundings_western_1m_tile_extent_idx ON schema2rename.soundings_western_1m USING gist (tile_extent);
+CREATE INDEX soundings_western_1m_tile_geom_idx ON schema2rename.soundings_western_1m USING gist (tile_geom);
 
-CREATE INDEX soundings_2m_lower_sysperiod ON z_sm3.soundings_2m USING btree (lower(sys_period));
-CREATE INDEX soundings_2m_metadata_id ON z_sm3.soundings_2m USING btree (metadata_id);
-CREATE INDEX soundings_2m_raster ON z_sm3.soundings_2m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_2m_sysperiod ON z_sm3.soundings_2m USING gist (sys_period);
-CREATE INDEX soundings_2m_tile_extent_idx ON z_sm3.soundings_2m USING gist (tile_extent);
-CREATE INDEX soundings_2m_tile_geom_idx ON z_sm3.soundings_2m USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_2m_lower_sysperiod ON z_sm3.soundings_atlantic_2m USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_2m_metadata_id ON z_sm3.soundings_atlantic_2m USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_2m_raster ON z_sm3.soundings_atlantic_2m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_2m_sysperiod ON z_sm3.soundings_atlantic_2m USING gist (sys_period);
-CREATE INDEX soundings_atlantic_2m_tile_extent_idx ON z_sm3.soundings_atlantic_2m USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_2m_tile_geom_idx ON z_sm3.soundings_atlantic_2m USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_2m_lower_sysperiod ON z_sm3.soundings_vnsl_2m USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_2m_metadata_id ON z_sm3.soundings_vnsl_2m USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_2m_raster ON z_sm3.soundings_vnsl_2m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_2m_sysperiod ON z_sm3.soundings_vnsl_2m USING gist (sys_period);
-CREATE INDEX soundings_vnsl_2m_tile_extent_idx ON z_sm3.soundings_vnsl_2m USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_2m_tile_geom_idx ON z_sm3.soundings_vnsl_2m USING gist (tile_geom);
-CREATE INDEX soundings_western_2m_lower_sysperiod ON z_sm3.soundings_western_2m USING btree (lower(sys_period));
-CREATE INDEX soundings_western_2m_metadata_id ON z_sm3.soundings_western_2m USING btree (metadata_id);
-CREATE INDEX soundings_western_2m_raster ON z_sm3.soundings_western_2m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_2m_sysperiod ON z_sm3.soundings_western_2m USING gist (sys_period);
-CREATE INDEX soundings_western_2m_tile_extent_idx ON z_sm3.soundings_western_2m USING gist (tile_extent);
-CREATE INDEX soundings_western_2m_tile_geom_idx ON z_sm3.soundings_western_2m USING gist (tile_geom);
+CREATE INDEX soundings_2m_lower_sysperiod ON schema2rename.soundings_2m USING btree (lower(sys_period));
+CREATE INDEX soundings_2m_metadata_id ON schema2rename.soundings_2m USING btree (metadata_id);
+CREATE INDEX soundings_2m_raster ON schema2rename.soundings_2m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_2m_sysperiod ON schema2rename.soundings_2m USING gist (sys_period);
+CREATE INDEX soundings_2m_tile_extent_idx ON schema2rename.soundings_2m USING gist (tile_extent);
+CREATE INDEX soundings_2m_tile_geom_idx ON schema2rename.soundings_2m USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_2m_lower_sysperiod ON schema2rename.soundings_atlantic_2m USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_2m_metadata_id ON schema2rename.soundings_atlantic_2m USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_2m_raster ON schema2rename.soundings_atlantic_2m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_2m_sysperiod ON schema2rename.soundings_atlantic_2m USING gist (sys_period);
+CREATE INDEX soundings_atlantic_2m_tile_extent_idx ON schema2rename.soundings_atlantic_2m USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_2m_tile_geom_idx ON schema2rename.soundings_atlantic_2m USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_2m_lower_sysperiod ON schema2rename.soundings_vnsl_2m USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_2m_metadata_id ON schema2rename.soundings_vnsl_2m USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_2m_raster ON schema2rename.soundings_vnsl_2m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_2m_sysperiod ON schema2rename.soundings_vnsl_2m USING gist (sys_period);
+CREATE INDEX soundings_vnsl_2m_tile_extent_idx ON schema2rename.soundings_vnsl_2m USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_2m_tile_geom_idx ON schema2rename.soundings_vnsl_2m USING gist (tile_geom);
+CREATE INDEX soundings_western_2m_lower_sysperiod ON schema2rename.soundings_western_2m USING btree (lower(sys_period));
+CREATE INDEX soundings_western_2m_metadata_id ON schema2rename.soundings_western_2m USING btree (metadata_id);
+CREATE INDEX soundings_western_2m_raster ON schema2rename.soundings_western_2m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_2m_sysperiod ON schema2rename.soundings_western_2m USING gist (sys_period);
+CREATE INDEX soundings_western_2m_tile_extent_idx ON schema2rename.soundings_western_2m USING gist (tile_extent);
+CREATE INDEX soundings_western_2m_tile_geom_idx ON schema2rename.soundings_western_2m USING gist (tile_geom);
 
-CREATE INDEX soundings_4m_lower_sysperiod ON z_sm3.soundings_4m USING btree (lower(sys_period));
-CREATE INDEX soundings_4m_metadata_id ON z_sm3.soundings_4m USING btree (metadata_id);
-CREATE INDEX soundings_4m_raster ON z_sm3.soundings_4m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_4m_sysperiod ON z_sm3.soundings_4m USING gist (sys_period);
-CREATE INDEX soundings_4m_tile_extent_idx ON z_sm3.soundings_4m USING gist (tile_extent);
-CREATE INDEX soundings_4m_tile_geom_idx ON z_sm3.soundings_4m USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_4m_lower_sysperiod ON z_sm3.soundings_atlantic_4m USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_4m_metadata_id ON z_sm3.soundings_atlantic_4m USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_4m_raster ON z_sm3.soundings_atlantic_4m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_4m_sysperiod ON z_sm3.soundings_atlantic_4m USING gist (sys_period);
-CREATE INDEX soundings_atlantic_4m_tile_extent_idx ON z_sm3.soundings_atlantic_4m USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_4m_tile_geom_idx ON z_sm3.soundings_atlantic_4m USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_4m_lower_sysperiod ON z_sm3.soundings_vnsl_4m USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_4m_metadata_id ON z_sm3.soundings_vnsl_4m USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_4m_raster ON z_sm3.soundings_vnsl_4m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_4m_sysperiod ON z_sm3.soundings_vnsl_4m USING gist (sys_period);
-CREATE INDEX soundings_vnsl_4m_tile_extent_idx ON z_sm3.soundings_vnsl_4m USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_4m_tile_geom_idx ON z_sm3.soundings_vnsl_4m USING gist (tile_geom);
-CREATE INDEX soundings_western_4m_lower_sysperiod ON z_sm3.soundings_western_4m USING btree (lower(sys_period));
-CREATE INDEX soundings_western_4m_metadata_id ON z_sm3.soundings_western_4m USING btree (metadata_id);
-CREATE INDEX soundings_western_4m_raster ON z_sm3.soundings_western_4m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_4m_sysperiod ON z_sm3.soundings_western_4m USING gist (sys_period);
-CREATE INDEX soundings_western_4m_tile_extent_idx ON z_sm3.soundings_western_4m USING gist (tile_extent);
-CREATE INDEX soundings_western_4m_tile_geom_idx ON z_sm3.soundings_western_4m USING gist (tile_geom);
+CREATE INDEX soundings_4m_lower_sysperiod ON schema2rename.soundings_4m USING btree (lower(sys_period));
+CREATE INDEX soundings_4m_metadata_id ON schema2rename.soundings_4m USING btree (metadata_id);
+CREATE INDEX soundings_4m_raster ON schema2rename.soundings_4m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_4m_sysperiod ON schema2rename.soundings_4m USING gist (sys_period);
+CREATE INDEX soundings_4m_tile_extent_idx ON schema2rename.soundings_4m USING gist (tile_extent);
+CREATE INDEX soundings_4m_tile_geom_idx ON schema2rename.soundings_4m USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_4m_lower_sysperiod ON schema2rename.soundings_atlantic_4m USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_4m_metadata_id ON schema2rename.soundings_atlantic_4m USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_4m_raster ON schema2rename.soundings_atlantic_4m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_4m_sysperiod ON schema2rename.soundings_atlantic_4m USING gist (sys_period);
+CREATE INDEX soundings_atlantic_4m_tile_extent_idx ON schema2rename.soundings_atlantic_4m USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_4m_tile_geom_idx ON schema2rename.soundings_atlantic_4m USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_4m_lower_sysperiod ON schema2rename.soundings_vnsl_4m USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_4m_metadata_id ON schema2rename.soundings_vnsl_4m USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_4m_raster ON schema2rename.soundings_vnsl_4m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_4m_sysperiod ON schema2rename.soundings_vnsl_4m USING gist (sys_period);
+CREATE INDEX soundings_vnsl_4m_tile_extent_idx ON schema2rename.soundings_vnsl_4m USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_4m_tile_geom_idx ON schema2rename.soundings_vnsl_4m USING gist (tile_geom);
+CREATE INDEX soundings_western_4m_lower_sysperiod ON schema2rename.soundings_western_4m USING btree (lower(sys_period));
+CREATE INDEX soundings_western_4m_metadata_id ON schema2rename.soundings_western_4m USING btree (metadata_id);
+CREATE INDEX soundings_western_4m_raster ON schema2rename.soundings_western_4m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_4m_sysperiod ON schema2rename.soundings_western_4m USING gist (sys_period);
+CREATE INDEX soundings_western_4m_tile_extent_idx ON schema2rename.soundings_western_4m USING gist (tile_extent);
+CREATE INDEX soundings_western_4m_tile_geom_idx ON schema2rename.soundings_western_4m USING gist (tile_geom);
 
-CREATE INDEX soundings_8m_lower_sysperiod ON z_sm3.soundings_8m USING btree (lower(sys_period));
-CREATE INDEX soundings_8m_metadata_id ON z_sm3.soundings_8m USING btree (metadata_id);
-CREATE INDEX soundings_8m_raster ON z_sm3.soundings_8m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_8m_sysperiod ON z_sm3.soundings_8m USING gist (sys_period);
-CREATE INDEX soundings_8m_tile_extent_idx ON z_sm3.soundings_8m USING gist (tile_extent);
-CREATE INDEX soundings_8m_tile_geom_idx ON z_sm3.soundings_8m USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_8m_lower_sysperiod ON z_sm3.soundings_atlantic_8m USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_8m_metadata_id ON z_sm3.soundings_atlantic_8m USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_8m_raster ON z_sm3.soundings_atlantic_8m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_8m_sysperiod ON z_sm3.soundings_atlantic_8m USING gist (sys_period);
-CREATE INDEX soundings_atlantic_8m_tile_extent_idx ON z_sm3.soundings_atlantic_8m USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_8m_tile_geom_idx ON z_sm3.soundings_atlantic_8m USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_8m_lower_sysperiod ON z_sm3.soundings_vnsl_8m USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_8m_metadata_id ON z_sm3.soundings_vnsl_8m USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_8m_raster ON z_sm3.soundings_vnsl_8m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_8m_sysperiod ON z_sm3.soundings_vnsl_8m USING gist (sys_period);
-CREATE INDEX soundings_vnsl_8m_tile_extent_idx ON z_sm3.soundings_vnsl_8m USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_8m_tile_geom_idx ON z_sm3.soundings_vnsl_8m USING gist (tile_geom);
-CREATE INDEX soundings_western_8m_lower_sysperiod ON z_sm3.soundings_western_8m USING btree (lower(sys_period));
-CREATE INDEX soundings_western_8m_metadata_id ON z_sm3.soundings_western_8m USING btree (metadata_id);
-CREATE INDEX soundings_western_8m_raster ON z_sm3.soundings_western_8m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_8m_sysperiod ON z_sm3.soundings_western_8m USING gist (sys_period);
-CREATE INDEX soundings_western_8m_tile_extent_idx ON z_sm3.soundings_western_8m USING gist (tile_extent);
-CREATE INDEX soundings_western_8m_tile_geom_idx ON z_sm3.soundings_western_8m USING gist (tile_geom);
+CREATE INDEX soundings_8m_lower_sysperiod ON schema2rename.soundings_8m USING btree (lower(sys_period));
+CREATE INDEX soundings_8m_metadata_id ON schema2rename.soundings_8m USING btree (metadata_id);
+CREATE INDEX soundings_8m_raster ON schema2rename.soundings_8m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_8m_sysperiod ON schema2rename.soundings_8m USING gist (sys_period);
+CREATE INDEX soundings_8m_tile_extent_idx ON schema2rename.soundings_8m USING gist (tile_extent);
+CREATE INDEX soundings_8m_tile_geom_idx ON schema2rename.soundings_8m USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_8m_lower_sysperiod ON schema2rename.soundings_atlantic_8m USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_8m_metadata_id ON schema2rename.soundings_atlantic_8m USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_8m_raster ON schema2rename.soundings_atlantic_8m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_8m_sysperiod ON schema2rename.soundings_atlantic_8m USING gist (sys_period);
+CREATE INDEX soundings_atlantic_8m_tile_extent_idx ON schema2rename.soundings_atlantic_8m USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_8m_tile_geom_idx ON schema2rename.soundings_atlantic_8m USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_8m_lower_sysperiod ON schema2rename.soundings_vnsl_8m USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_8m_metadata_id ON schema2rename.soundings_vnsl_8m USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_8m_raster ON schema2rename.soundings_vnsl_8m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_8m_sysperiod ON schema2rename.soundings_vnsl_8m USING gist (sys_period);
+CREATE INDEX soundings_vnsl_8m_tile_extent_idx ON schema2rename.soundings_vnsl_8m USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_8m_tile_geom_idx ON schema2rename.soundings_vnsl_8m USING gist (tile_geom);
+CREATE INDEX soundings_western_8m_lower_sysperiod ON schema2rename.soundings_western_8m USING btree (lower(sys_period));
+CREATE INDEX soundings_western_8m_metadata_id ON schema2rename.soundings_western_8m USING btree (metadata_id);
+CREATE INDEX soundings_western_8m_raster ON schema2rename.soundings_western_8m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_8m_sysperiod ON schema2rename.soundings_western_8m USING gist (sys_period);
+CREATE INDEX soundings_western_8m_tile_extent_idx ON schema2rename.soundings_western_8m USING gist (tile_extent);
+CREATE INDEX soundings_western_8m_tile_geom_idx ON schema2rename.soundings_western_8m USING gist (tile_geom);
 
-CREATE INDEX soundings_16m_lower_sysperiod ON z_sm3.soundings_16m USING btree (lower(sys_period));
-CREATE INDEX soundings_16m_metadata_id ON z_sm3.soundings_16m USING btree (metadata_id);
-CREATE INDEX soundings_16m_raster ON z_sm3.soundings_16m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_16m_sysperiod ON z_sm3.soundings_16m USING gist (sys_period);
-CREATE INDEX soundings_16m_tile_extent_idx ON z_sm3.soundings_16m USING gist (tile_extent);
-CREATE INDEX soundings_16m_tile_geom_idx ON z_sm3.soundings_16m USING gist (tile_geom);
-CREATE INDEX soundings_atlantic_16m_lower_sysperiod ON z_sm3.soundings_atlantic_16m USING btree (lower(sys_period));
-CREATE INDEX soundings_atlantic_16m_metadata_id ON z_sm3.soundings_atlantic_16m USING btree (metadata_id);
-CREATE INDEX soundings_atlantic_16m_raster ON z_sm3.soundings_atlantic_16m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_atlantic_16m_sysperiod ON z_sm3.soundings_atlantic_16m USING gist (sys_period);
-CREATE INDEX soundings_atlantic_16m_tile_extent_idx ON z_sm3.soundings_atlantic_16m USING gist (tile_extent);
-CREATE INDEX soundings_atlantic_16m_tile_geom_idx ON z_sm3.soundings_atlantic_16m USING gist (tile_geom);
-CREATE INDEX soundings_vnsl_16m_lower_sysperiod ON z_sm3.soundings_vnsl_16m USING btree (lower(sys_period));
-CREATE INDEX soundings_vnsl_16m_metadata_id ON z_sm3.soundings_vnsl_16m USING btree (metadata_id);
-CREATE INDEX soundings_vnsl_16m_raster ON z_sm3.soundings_vnsl_16m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_vnsl_16m_sysperiod ON z_sm3.soundings_vnsl_16m USING gist (sys_period);
-CREATE INDEX soundings_vnsl_16m_tile_extent_idx ON z_sm3.soundings_vnsl_16m USING gist (tile_extent);
-CREATE INDEX soundings_vnsl_16m_tile_geom_idx ON z_sm3.soundings_vnsl_16m USING gist (tile_geom);
-CREATE INDEX soundings_western_16m_lower_sysperiod ON z_sm3.soundings_western_16m USING btree (lower(sys_period));
-CREATE INDEX soundings_western_16m_metadata_id ON z_sm3.soundings_western_16m USING btree (metadata_id);
-CREATE INDEX soundings_western_16m_raster ON z_sm3.soundings_western_16m USING gist (st_convexhull(rast));
-CREATE INDEX soundings_western_16m_sysperiod ON z_sm3.soundings_western_16m USING gist (sys_period);
-CREATE INDEX soundings_western_16m_tile_extent_idx ON z_sm3.soundings_western_16m USING gist (tile_extent);
-CREATE INDEX soundings_western_16m_tile_geom_idx ON z_sm3.soundings_western_16m USING gist (tile_geom);
+CREATE INDEX soundings_16m_lower_sysperiod ON schema2rename.soundings_16m USING btree (lower(sys_period));
+CREATE INDEX soundings_16m_metadata_id ON schema2rename.soundings_16m USING btree (metadata_id);
+CREATE INDEX soundings_16m_raster ON schema2rename.soundings_16m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_16m_sysperiod ON schema2rename.soundings_16m USING gist (sys_period);
+CREATE INDEX soundings_16m_tile_extent_idx ON schema2rename.soundings_16m USING gist (tile_extent);
+CREATE INDEX soundings_16m_tile_geom_idx ON schema2rename.soundings_16m USING gist (tile_geom);
+CREATE INDEX soundings_atlantic_16m_lower_sysperiod ON schema2rename.soundings_atlantic_16m USING btree (lower(sys_period));
+CREATE INDEX soundings_atlantic_16m_metadata_id ON schema2rename.soundings_atlantic_16m USING btree (metadata_id);
+CREATE INDEX soundings_atlantic_16m_raster ON schema2rename.soundings_atlantic_16m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_atlantic_16m_sysperiod ON schema2rename.soundings_atlantic_16m USING gist (sys_period);
+CREATE INDEX soundings_atlantic_16m_tile_extent_idx ON schema2rename.soundings_atlantic_16m USING gist (tile_extent);
+CREATE INDEX soundings_atlantic_16m_tile_geom_idx ON schema2rename.soundings_atlantic_16m USING gist (tile_geom);
+CREATE INDEX soundings_vnsl_16m_lower_sysperiod ON schema2rename.soundings_vnsl_16m USING btree (lower(sys_period));
+CREATE INDEX soundings_vnsl_16m_metadata_id ON schema2rename.soundings_vnsl_16m USING btree (metadata_id);
+CREATE INDEX soundings_vnsl_16m_raster ON schema2rename.soundings_vnsl_16m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_vnsl_16m_sysperiod ON schema2rename.soundings_vnsl_16m USING gist (sys_period);
+CREATE INDEX soundings_vnsl_16m_tile_extent_idx ON schema2rename.soundings_vnsl_16m USING gist (tile_extent);
+CREATE INDEX soundings_vnsl_16m_tile_geom_idx ON schema2rename.soundings_vnsl_16m USING gist (tile_geom);
+CREATE INDEX soundings_western_16m_lower_sysperiod ON schema2rename.soundings_western_16m USING btree (lower(sys_period));
+CREATE INDEX soundings_western_16m_metadata_id ON schema2rename.soundings_western_16m USING btree (metadata_id);
+CREATE INDEX soundings_western_16m_raster ON schema2rename.soundings_western_16m USING gist (st_convexhull(rast));
+CREATE INDEX soundings_western_16m_sysperiod ON schema2rename.soundings_western_16m USING gist (sys_period);
+CREATE INDEX soundings_western_16m_tile_extent_idx ON schema2rename.soundings_western_16m USING gist (tile_extent);
+CREATE INDEX soundings_western_16m_tile_geom_idx ON schema2rename.soundings_western_16m USING gist (tile_geom);
 
-CREATE INDEX sounding_age_geom_idx ON z_sm3.sounding_age USING gist (geom);
-CREATE INDEX sounding_age_year_geom_idx ON z_sm3.sounding_age_year USING gist (geom);
+CREATE INDEX sounding_age_geom_idx ON schema2rename.sounding_age USING gist (geom);
+CREATE INDEX sounding_age_year_geom_idx ON schema2rename.sounding_age_year USING gist (geom);
 
 
 

@@ -2,24 +2,21 @@ h1.  Create new wis Schema
 
 This how-to allow you to create your new WIS _ad hoc_ database.
 
-h2.  1 Create schema
+h2.  1 WIS schema
 
-The first step will be to create a schema.  We assume you create a schema in a Postgresql database that already has all dfo wis functions.  (see [[Database_overview]] overview for more info)
+We assume you create a schema in a Postgresql database that already has all dfo wis functions.  (see [[Database_overview]] overview for more info)
 
-<pre>
-CREATE SCHEMA z_test_sm;
-</pre>
 
 h2.  2 Create tables structure
 
-Use this SQL script to create an empty wis database structure.  Before run the script, be sure to _find and replace_ the `wis.` schema keyword for your new schema name.
+Use this SQL script to create an empty wis database structure.  Before run the script, be sure to _find and replace_ the `schema2rename.` schema keyword for your new tmp schema name.
 
 *NOTE:* the script is attache to this page but can change over time.  Look into the github pgrastertime for the last version of the script.
 https://github.com/mapgears/pgrastertime/tree/master/sql/wis
 
 <pre>
 cp dfo_wis_soundings_1_tables_structure.sql tmp_create_schema.sql
-sed -i "s/wis./z_test_sm./g" tmp_create_schema.sql
+sed -i "s/schema2rename./z_test_sm./g" tmp_create_schema.sql
 </pre>
 
 h2.  3 Load empty tables
