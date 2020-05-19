@@ -1,0 +1,49 @@
+  CLASS
+    EXPRESSION ([pixel] >= 1)
+    NAME "More than 1.0m shallower than reference depth"
+    STYLE
+      COLOR "#FC8327"
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <1  AND [pixel] >=0.5)
+    NAME "0.5 to 1.0m shallower than reference depth"
+    STYLE
+      COLOR "#FEBE26"
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] < 0.5 AND [pixel] >=0)
+    NAME "Less than 0.5m shallower than reference depth"
+    STYLE
+      COLOR "#FEF65B"
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <0 AND [pixel] >=-0.5)
+    NAME "Less than 0.5m deeper than reference depth"
+    STYLE
+      COLOR "#73E0FF"
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-0.5 AND [pixel] >=-1)
+    NAME "0.5 to 1.0m deeper than reference depth"
+    STYLE
+      COLOR "#4CBCF8"
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-1 AND [pixel] >=-1.5)
+    NAME "1.0 to 1.5m deeper than reference depth"
+    STYLE
+      COLOR "#2B9DFE"
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <=-1.5)
+    NAME "More than 1.5m deeper than reference"
+    STYLE
+      COLOR "#A5A5A5"
+    END
+  END  
