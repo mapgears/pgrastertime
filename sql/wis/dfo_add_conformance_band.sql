@@ -1,17 +1,17 @@
--- FUNCTION: public.dfo_add_conformance_band(text, text, text, numeric, text)
-
-DROP FUNCTION public.dfo_add_conformance_band(text, text, text, numeric, text);
+-- DROP FUNCTION public.dfo_add_conformance_band(text, text, text, numeric, text, text);
 
 CREATE OR REPLACE FUNCTION public.dfo_add_conformance_band(
 	rastertable text,
 	sectortable text,
 	sectorgeom text,
 	resolution numeric,
-	filename text)
-RETURNS text
-LANGUAGE 'plpgsql'
-COST 100
-VOLATILE 
+	filename text,
+    schema_ text default 'public')
+    RETURNS text
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE 
 AS $BODY$
 
 DECLARE
@@ -25,7 +25,13 @@ DECLARE
 BEGIN
 
     --get the raster column name from catalog
-    SELECT r_raster_column FROM raster_columns WHERE r_table_name = rastertable INTO rastcol;
+    --SELECT r_raster_column FROM raster_columns WHERE r_table_name = rastertable INTO rastcol;
+	strsql := concat('SELECT r_raster_column FROM raster_columns WHERE r_table_name =',quote_literal(rastertable),
+					  ' AND r_table_schema=',quote_literal(schema_));
+	RAISE notice 'sql = %', strsql;
+	
+	EXECUTE strsql INTO rastcol;
+	
     nb_rows := 0;
 	
     -- Create a temporary table being the clip of the raster on his intersecting geometries 
@@ -33,11 +39,11 @@ BEGIN
     strsql := concat( 'DROP TABLE IF EXISTS tmp_clip_to_conformance; 
                       CREATE TEMPORARY TABLE tmp_clip_to_conformance AS 
                       SELECT r.id,ST_Clip(',rastcol,',  ',sectorgeom,' ,false) AS raster , maintained 
-                      FROM ' ,rasterTable,' r JOIN ',sectorTable,' s ON ST_Intersects(tile_extent , ',sectorgeom,')
+                      FROM ',schema_,'.' ,rasterTable,' r JOIN ',schema_,'.',sectorTable,' s ON ST_Intersects(tile_extent , ',sectorgeom,')
                       WHERE filename LIKE ' , quote_literal(filename||'%'), ' AND resolution = ',resolution);
     EXECUTE strsql;
 	EXECUTE 'SELECT count(*) FROM tmp_clip_to_conformance' INTO nb_rows;
-	RAISE DEBUG 'Creat tmp table for sector table in %', strsql;
+	RAISE notice 'Creat tmp table for sector table in %', strsql;
 
     --create a second temporary table calculating the "conformance" by map algebra. 
     DROP TABLE IF EXISTS tmp_conformance_algebra;			 
@@ -52,21 +58,22 @@ BEGIN
     SELECT id, ST_Union(raster) AS raster FROM tmp_conformance_algebra GROUP BY id;
 
     --Update the original raster by adding the band genarated in the tmp_conformance table. 
-    strsql := concat('UPDATE ',rasterTable,' o 
+    strsql := concat('UPDATE ',schema_,'.',rasterTable,' o 
 			          SET ',rastcol,' =  ST_AddBand(o.',rastcol,', co.raster , 1)
 			          FROM tmp_conformance co WHERE co.id=o.id');		
-    EXECUTE strsql;		
+    RAISE notice 'Update rasterTable with: %', strsql;	
+	EXECUTE strsql;		
 
-    -- Add un null 'conformance' band for tile that are not intersecting any zone 
+    -- Add un null conformance band for tile that are not intersecting any zone 
 	-- (possible for soundings witch excede the chanel or zones without design grades) 
-    strsql = concat ('UPDATE ',rasterTable, 
+    strsql = concat ('UPDATE ',schema_,'.' ,rasterTable, 
                      ' SET ',rastcol,' = ST_AddBand(',rastcol,', --destination raster.
                                         ST_BandPixelType(',rastcol,',1), --pixel type
                                         ST_BandNoDataValue(',rastcol,',1), -- assign nodata value to all pixels
                                         ST_BandNoDataValue(',rastcol,',1)) -- assign nodata value to raster 
 				      WHERE filename LIKE ' , quote_literal(filename||'%'), ' 
 				      AND resolution = ',resolution, ' AND ST_Numbands(',rastcol,')=3');
-    RAISE DEBUG 'Update Band with: %', strsql;	
+    RAISE notice 'Update Band with: %', strsql;	
 	EXECUTE strsql;
 
     RETURN 'Update conformance band for ' || nb_rows || ' rows.';
