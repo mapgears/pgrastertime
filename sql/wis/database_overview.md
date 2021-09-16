@@ -606,18 +606,24 @@ _*NOTE*: After running this command line, remove all _inherit_ option from the r
 
 h2. Data transfer between server
 
-Here's a way to transfer a huge amount of data between Postgresql database server.
+Here's a way to transfer a huge amount of data between Postgresql database server.  The pg_dump command line need to be run through postgres linux user
 
 <pre>
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_16m -t soundings_atlantic_16m -t soundings_vnsl_16m -t soundings_western_16m | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_8m -t soundings_atlantic_8m -t soundings_vnsl_8m -t soundings_western_8m | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_4m -t soundings_atlantic_4m -t soundings_vnsl_4m -t soundings_western_4m | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_2m -t soundings_atlantic_2m -t soundings_vnsl_2m -t soundings_western_2m | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_1m -t soundings_atlantic_1m -t soundings_vnsl_1m -t soundings_western_1m | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_50cm -t soundings_atlantic_50cm -t soundings_vnsl_50cm -t soundings_western_50cm | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_25cm -t soundings_atlantic_25cm -t soundings_vnsl_25cm -t soundings_western_25cm | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
-pg_dump -c -h localhost -U loader -d pgrastertime -t most_recent_25cm -t most_recent_50cm -t most_recent_1m -t most_recent_2m -t most_recent_4m -t most_recent_8m -t most_recent_16m | psql -h 10.208.34.187 -p 5432 -U smercier -d dbtest 
+sudo su postgres
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_16m -t soundings_atlantic_16m -t soundings_vnsl_16m -t soundings_western_16m | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_8m -t soundings_atlantic_8m -t soundings_vnsl_8m -t soundings_western_8m | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_4m -t soundings_atlantic_4m -t soundings_vnsl_4m -t soundings_western_4m | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_2m -t soundings_atlantic_2m -t soundings_vnsl_2m -t soundings_western_2m | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_1m -t soundings_atlantic_1m -t soundings_vnsl_1m -t soundings_western_1m | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_50cm -t soundings_atlantic_50cm -t soundings_vnsl_50cm -t soundings_western_50cm | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t soundings_25cm -t soundings_atlantic_25cm -t soundings_vnsl_25cm -t soundings_western_25cm | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav 
+pg_dump -c -h localhost -U loader -d pgrastertime -t most_recent_25cm -t most_recent_50cm -t most_recent_1m -t most_recent_2m -t most_recent_4m -t most_recent_8m -t most_recent_16m | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav
+
+pg_dump -c -h localhost -d pgrastertime -t grid_4m -t grid_8m -t grid_16m -t grid_64m -t design_grade -t region_footprint | psql -h 10.208.34.187 -p 5432 -U pgrastertime -W -d enav
 </pre>
+
+
+pg_dump -c -h localhost -U loader -d pgrastertime -t grid_4m -t grid_8m -t grid_16m -t grid_64m -t design_grade -t region_footprint | psql -h 10.208.34.187 -p 5432 -U smercier -d enav pgrastertime
 
 Or if we need to store data in a temporary file
 

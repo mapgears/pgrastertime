@@ -241,5 +241,47 @@ python3 pgrastertime.py -t soundings_4m -m time_start='2017-12-31' -m time_end='
  * Include xml.sh process through SQLAlchemy
 
 
+# Gdal version command line
+ ```
+python3 pgrastertime.py -s ./sql/basePostProcess.sql -t testtable -f -r ./data/ -p xml  -m gdal_path=gdal-2.4.0
+  ```
+# Docker
+We built a dockerfile with the latest version of gdal osgeo / gdal: ubuntu-full-latest. Since we use
+  Docker, we can remove the python environment part and run commands directly as root.
+  We are also referring to another container for the postgis part which could be stacked in a stack. 
+  First, create an image. The Dockerfile in the directory where file is locate.
+  The content of the dockerfile
+  ```
+FROM osgeo/gdal:ubuntu-full-latest
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y tzdata git postgresql postgis build-essential  nano python3-pip
+                                  
+RUN git clone https://github.com/mapgears/pgrastertime && \
+    pip3 install sqlalchemy && \
+    pip3 install geoalchemy2 && \
+    pip3 install psycopg2-binary
 
 
+  ```
+  ```
+docker build -t name_of_image . 
+  ```
+Run the container with this images.  https://docs.docker.com/engine/reference/run/
+in a shell  console do the next command
+
+```
+cd pgrastertime
+cp development.ini local.ini
+nano local.ini
+```
+replace local.ini parameters
+
+put the coordinates of the db. 
+```
+postgresql://user:password@localhost:5432/pgrastertime
+by
+postgresql://loader:loader@ipaddress_of_posgis_db:5432/pgrastertime
+```
+Try some example and when this container work well, you can save the container to the new configurated image.
+https://docs.docker.com/engine/reference/commandline/commit/

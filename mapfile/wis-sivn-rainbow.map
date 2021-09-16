@@ -1,0 +1,49 @@
+  CLASS
+    EXPRESSION ([pixel] <0  AND [pixel] >=-8)
+    NAME "0 to 8 m"
+    STYLE
+      COLORRANGE 152 0 86 254 0 0
+      DATARANGE 0 -8
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-8 AND [pixel] >=-10)
+    NAME "8 to 10 m"
+    STYLE
+      COLORRANGE 254 0 0 255 255 0
+      DATARANGE -8 -10
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-10 AND [pixel] >=-12)
+    NAME "10 to 12 m"
+    STYLE
+      COLORRANGE 255 255 0 0 255 0
+      DATARANGE -10 -12
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-12 AND [pixel] >=-14)
+    NAME "12 to 14 m"
+    STYLE
+      COLORRANGE 0 255 0 0 255 255
+      DATARANGE -12 -14
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-14 AND [pixel] >=-20)
+    NAME "14 to 20 m"
+    STYLE
+      COLORRANGE 0 255 255 0 0 255
+      DATARANGE -14 -20
+    END
+  END
+  CLASS
+    EXPRESSION ([pixel] <-20 AND [pixel] >=-105)
+    NAME "20 to 105 m"
+    STYLE
+      COLORRANGE 0 0 255 116 0 122
+      DATARANGE -20 -105
+    END
+  END
+

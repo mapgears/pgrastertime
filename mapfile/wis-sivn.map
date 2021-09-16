@@ -1,0 +1,657 @@
+MAP
+  NAME "WIS-SIVN"
+  STATUS ON
+  MAXSIZE 100000
+  SIZE 1667 1667  
+  #18c en 2950 EXTENT 302124 5043976 333064 5101380
+  #18g en 2949 EXTENT 272736 5194368 292784 5224512 
+  ## EXTENT 1668963.24 -103447.83 1814784.90 146089.32
+  ## Fraser river
+  EXTENT -2040687 419276 2085000 790000
+  
+  # =========================
+  # Degug options, 0 to 5 
+  # ========================= 
+  ## DEBUG 5
+  CONFIG "MS_ERRORFILE" "./wis-sivn.log"
+  
+  FONTSET "../common/fonts.lst"
+  SYMBOLSET "../common/symbols.sym"
+  
+  PROJECTION
+     "init=epsg:3979"
+  END
+  
+  # =========================
+  # Manage output to support 
+  # transparency
+  # ========================= 
+  TRANSPARENT ON 
+
+  LEGEND
+    KEYSIZE 18 12
+    LABEL
+      TYPE BITMAP
+      SIZE MEDIUM
+      COLOR 0 0 89
+    END
+    STATUS ON
+  END
+  
+  # =========================
+  # Metadata to define
+  # =========================
+  WEB
+    METADATA
+      "wms_name" "WIS-SIVN"
+      "wms_title" "WIS-SIVN"
+      "wms_abstract" "Waterways Information System -- Systeme information pour les voies navigables"
+      "ows_enable_request" "*"
+      "wms_feature_info_mime_type" "text/html"
+      "wfs_encoding" "UTF-8"
+      "wms_onlineresource" "http://localhost/wis-sivn?"
+      "wms_srs" "EPSG:4326 EPSG:3857 EPSG:2950 EPSG:2949 EPSG:32188 EPSG:32187 EPSG:42403 EPSG:3857 EPSG:3979"
+      # "wms_encoding" "UTF-8"
+      # "wms_keywordlist" ""
+      # "wms_languages"
+      # "wms_contactorganization" ""
+      # "wms_contactperson" ""
+      # "wms_contactposition" ""
+      # "wms_addresstype" "postal"
+      # "wms_address" ""
+      # "wms_city" "Québec"
+      # "wms_stateorprovince" "Québec"
+      # "wms_postcode" ""
+      # "wms_country" "Canada"
+      # "wms_attribution_title" "DFO-MPO"
+      # "wms_attribution_onlineresource" ""
+      # "wms_attribution_logourl_href" ""
+      # "wms_attribution_logourl_height" ""
+      # "wms_attribution_logourl_width" ""
+      ## "labelcache_map_edge_buffer" "-50"  # This option help to avoid metatile label clip for mapcache.  W/raster we don't need it
+
+    END
+    IMAGEPATH "/tmp/" 
+    IMAGEURL "/tmp/"
+    BROWSEFORMAT "text/html"
+    QUERYFORMAT "text/html"
+    TEMPPATH "./"
+  END
+
+## Some parameters are required to make sure layers works OK.  They are identified in this layer
+
+LAYER
+    NAME "wis_table"
+
+    ## In this layer we support 1.3.0 and 1.1.1/1.1.0 OGC standard.  So we need to manage this in the SQL where clause.
+    ## The 1.3.0 use SRS and the 1.1.1/1.1.0 use CRS param. 
+    DATA "PG:host=10.208.34.187 port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast  schema=%schema%  table=%table%  where=\"tile_extent && ST_Transform(ST_MakeEnvelope(%bbox%,replace(\\\'%crs%%srs%\\\',\\\'EPSG:\\\',\\\'\\\')::integer),3979)\""
+	TYPE RASTER
+
+    ## band 0 = depth (default), band 1 = density, band 2 = mean, band 3 = conformance
+    ## PROCESSING "BANDS=0"
+    PROCESSING "SCALE=AUTO"
+
+    ## band 0 is the default band.  In this layer we will exposed all pixel values. 
+
+    ##  *Required* to support getinfo
+    TEMPLATE "./pixel-single-band.html"
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+
+    ## *Required* to support run time varables commings from URL param
+    VALIDATION
+       'bbox' '.*'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+       'table' '.*'
+       'default_table' ''       
+	   'schema' '.*'
+       'default_schema' ''
+    END
+
+    ##  Useful = wms_name, wms_title
+    ##  *Required* = wms_extent, wms_srs, ows_enable_request are the most important of the layer
+    METADATA
+      "wms_name" "wis_table"
+      "wms_title" "WIS table"
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      ## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000"
+      "ows_enable_request" "*"
+      "ows_include_items" "all"
+    END
+
+    ##  *Required*
+    PROJECTION
+        "init=epsg:3979"
+    END
+    
+    ##  *Required*
+    include "./wis-sivn-rainbow.map"
+END
+
+  LAYER
+     NAME 'wis_table_tile_extent'
+     CONNECTION "host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime port=5432"
+     CONNECTIONTYPE POSTGIS
+     PROCESSING 'CLOSE_CONNECTION=DEFER'
+     PROJECTION
+             "init=epsg:3979"
+     END
+     TEMPLATE "blank.html"
+     TOLERANCE 1
+     TOLERANCEUNITS pixels
+     METADATA
+          "wms_name" "wis_table_tile_extent"
+		  "wms_title" "WIS table tile_extent"
+          "wms_enable_request" "*"
+          "ows_include_items" "all"
+		  "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+     END
+     TYPE POLYGON
+    ## *Required* to support run time varables commings from URL param
+    VALIDATION
+       'bbox' '.*'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+       'table' '.*'
+       'default_table' ''       
+	   'schema' '.*'
+       'default_schema' ''
+    END
+     DATA "tile_extent from (select tile_extent,id from %schema%.%table%) as foo using unique id using srid=3979"
+     CLASS
+       STYLE
+          OUTLINECOLOR '#e33b6d'
+          WIDTH 5
+       END
+     END
+  END
+
+LAYER
+    NAME "most_recent_depth_autoscale"
+    ##  The scaletaken is a variable that can be change based on scale of the getmap
+    SCALETOKEN
+      NAME "%resolution%" 
+      VALUES
+        "0" "most_recent_2m"
+        "15000" "most_recent_2m"
+        "25000" "most_recent_4m"
+        "75000" "most_recent_8m"
+        "100000" "most_recent_16m"
+      END      
+    END
+
+    ## Data param is needed.  schema and where param is optional
+    ## In this layer we support 1.3.0 and 1.1.1/1.1.0 OGC standard.  So we need to manage this in the SQL where clause.
+    ## The 1.3.0 use SRS and the 1.1.1/1.1.0 use CRS param. 
+    DATA "PG:host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast  schema=wis  table=%resolution%  where=\"tile_extent && ST_Transform(ST_MakeEnvelope(%bbox%,replace(\\\'%crs%%srs%\\\',\\\'EPSG:\\\',\\\'\\\')::integer),3979)\""
+
+	TYPE RASTER
+
+    ## band 0 = depth, band 1 = density, band 2 = mean, band 3 = conformance
+    ## PROCESSING "BANDS=0"
+    PROCESSING "SCALE=AUTO"
+    ## band 0 is the default band.  In this layer we will exposed all pixel values. 
+
+    ##  *Required* to support getinfo
+    TEMPLATE "./pixel-single-band.html"
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+
+    ## *Required* to support run time varables commings from URL param
+    VALIDATION
+       'bbox' '.*'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+    END
+
+    ##  Useful = wms_name, wms_title
+    ##  *Required* = wms_extent, wms_srs, ows_enable_request are the most important of the layer
+    METADATA
+      "wms_name" "most_recent_depth_autoscale"
+      "wms_title" "Most Recent Depth (auto scale)"
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      ## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000"
+      "ows_enable_request" "*"
+      "ows_include_items" "all"
+    END
+
+    ##  *Required*
+    PROJECTION
+        "init=epsg:3979"
+    END
+    
+    ##  *Required*
+    include "./wis-sivn-rainbow.map"
+END
+
+LAYER
+    NAME "most_recent_conformance_autoscale" 
+    SCALETOKEN
+      NAME "%resolution%" 
+      VALUES
+        "0" "most_recent_1m"
+        "15000" "most_recent_2m"
+        "25000" "most_recent_4m"
+        "75000" "most_recent_8m"
+        "100000" "most_recent_16m"
+      END
+    END
+    TYPE RASTER
+    
+    ## band 0 = depth, band 1 = density, band 2 = mean, band 3 = empty, band 4 = conformance
+    PROCESSING "BANDS=4"
+    PROCESSING "SCALE=AUTO"
+	
+	## Replicat Database server
+    DATA "PG:host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast  schema=wis  table=%resolution%  where=\"tile_extent && ST_Transform(ST_MakeEnvelope(%bbox%,replace(\\\'%crs%%srs%\\\',\\\'EPSG:\\\',\\\'\\\')::integer),3979)\""
+
+    TEMPLATE "./pixel-single-band.html"  
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+	##'bbox' '-?[0-9][.,]?'
+    VALIDATION
+       'bbox' '-?[0-9][.,]?'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+    END
+    METADATA
+      "wms_name" "most_recent_conformance_autoscale" 
+      "wms_title" "Most Recent Conformance (auto scale)" 
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      ## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000"      
+      "ows_enable_request" "*" 
+      "ows_include_items" "all" 
+    END
+    PROJECTION
+        "init=epsg:3979" 
+    END
+    include "./wis-conformance.map" 
+END
+
+LAYER
+    NAME "most_recent_conformance_noresol" 
+    TYPE RASTER
+    
+    ## band 0 = depth, band 1 = density, band 2 = mean, band 3 = empty, band 4 = conformance
+    PROCESSING "BANDS=4"
+    PROCESSING "SCALE=AUTO"
+	
+	## Replicat Database server
+    DATA "PG:host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast  schema=wis  table=most_recent_%resolution%  where=\"tile_extent && ST_Transform(ST_MakeEnvelope(%bbox%,replace(\\\'%crs%%srs%\\\',\\\'EPSG:\\\',\\\'\\\')::integer),3979)\""
+
+    TEMPLATE "./pixel-single-band.html"  
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+	##'bbox' '-?[0-9][.,]?'
+    VALIDATION
+       'bbox' '-?[0-9][.,]?'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+       'resolution' '*'
+       'default_resolution' '16m'
+    END
+    METADATA
+      "wms_name" "most_recent_conformance_noresol" 
+      "wms_title" "Most Recent Conformance (default 16m resol)" 
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      ## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000"      
+      "ows_enable_request" "*" 
+      "ows_include_items" "all" 
+    END
+    PROJECTION
+        "init=epsg:3979" 
+    END
+    include "./wis-conformance.map" 
+END
+  
+  LAYER
+     NAME 'tile_extent'
+     SCALETOKEN
+      NAME "%resolution%"
+      VALUES
+        "0" "1m"
+        "15000" "2m"
+        "25000" "4m"
+        "75000" "8m"
+        "100000" "16m"
+      END
+    END
+     CONNECTION "host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime port=5432"
+     CONNECTIONTYPE POSTGIS
+     PROCESSING 'CLOSE_CONNECTION=DEFER'
+     PROJECTION
+             "init=epsg:3979"
+     END
+     TEMPLATE "blank.html"
+     TOLERANCE 1
+     TOLERANCEUNITS pixels
+     METADATA
+          "wms_name" "tile_extent"
+          "wms_enable_request" "*"
+          "ows_include_items" "all"
+     END
+     TYPE POLYGON
+     DATA "tile_extent from (select tile_extent,id from wis.soundings_%resolution%) as foo using unique id using srid=3979"
+     CLASS
+       STYLE
+          OUTLINECOLOR '#4B0082'
+          WIDTH 5
+       END
+     END
+  END
+
+## This layer is much slower because ALL historical data is process in it
+LAYER
+    NAME "historical_conformance"
+    SCALETOKEN
+      NAME "%resolution%"
+      VALUES
+        "0" "1m"
+        "15000" "2m"
+        "25000" "4m"
+        "75000" "8m"
+        "100000" "16m"
+      END 
+    END 
+    OFFSITE 0 0 0
+    TYPE RASTER
+	DATA "PG:host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast schema=wis table=soundings_%resolution% where=\"tile_extent && ST_Transform(ST_MakeEnvelope(%bbox%,replace(\\\'%crs%%srs%\\\',\\\'EPSG:\\\',\\\'\\\')::integer),3979) and sys_period = \\\'%time%\\\'\""
+    PROCESSING "BANDS=4"
+    PROCESSING "SCALE=AUTO"
+
+    TEMPLATE "./pixel-multi.html"
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+    
+    ## time validation is REQUIERD to support OGC TIME parameters  
+    VALIDATION
+       'time' '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$'
+       'default_time' '3000-01-01T00:00:00.000Z'
+       'bbox' '-?[0-9][.,]?'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+    END 
+
+    ## time metadata param ares requierd to support OGC TIME param
+    METADATA
+      "wms_name" "historical_conformance"
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      ## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000"      
+      "ows_enable_request" "*"
+      "ows_include_items" "all"
+      "wms_timeformat" "YYYYMMDDZ00:00:00.0000T"
+      "wms_timeextent" "2000-01-01/3000-01-01"
+      "wms_timeitem" "sys_period"
+      "wms_timedefault" "3000-01-01Z00:00:00.000T"
+    END
+    PROJECTION
+        "init=epsg:3979"
+    END
+    include "./wis-conformance.map"
+END
+
+LAYER
+    NAME "historical_conformance_compare"
+    SCALETOKEN
+      NAME "%resolution%"
+      VALUES
+        "0" "1m"
+        "15000" "2m"
+        "25000" "4m"
+        "75000" "8m"
+        "100000" "16m"
+      END
+    END
+    TYPE RASTER
+    DATA "PG:host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast schema=wis table=soundings_%resolution% where=\"tile_extent && ST_Transform(ST_MakeEnvelope(%bbox%,replace(\\\'%crs%%srs%\\\',\\\'EPSG:\\\',\\\'\\\')::integer),3979) and sys_period = \\\'%time%\\\'\""
+    ## processing instrcution
+    PROCESSING "BANDS=4"
+    PROCESSING "SCALE=AUTO"
+    TEMPLATE "./pixel-multi.html"
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+    ## time validation is REQUIERD to support OGC TIME parameters
+    VALIDATION
+       'time' '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$'
+       'default_time' '3000-01-01T00:00:00.000Z'
+       'bbox' '-?[0-9][.,]?'
+       'default_bbox' '-13731759,6286181,-13726867,6291073'
+       'crs' '.*'
+       'default_crs' ''
+       'srs' '.*'
+       'default_srs' ''
+    END
+    ## time metadata param ares requierd to support OGC TIME param
+    METADATA
+      "wms_name" "historical_conformance_compare"
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      ## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000"
+      "ows_enable_request" "*"
+      "ows_include_items" "all"
+      "wms_timeformat" "YYYYMMDDZ00:00:00.0000T"
+      "wms_timeextent" "2000-01-01/3000-01-01"
+      "wms_timeitem" "sys_period"
+      "wms_timedefault" "3000-01-01Z00:00:00.000T"
+    END
+    PROJECTION
+        "init=epsg:3979"
+    END
+    include "./wis-conformance.map"
+END
+
+LAYER
+    NAME "soundings_sedimentation" 
+    TYPE RASTER
+    DATA "PG:host=localhost port=5432 dbname=enav user=pgrastertime password=pgrastertime mode=2 column=rast schema=wis table=sedimentation_2017_2018"
+    TEMPLATE "./pixel-multi.html"
+    TOLERANCE 1
+    TOLERANCEUNITS pixels
+    METADATA
+      "wms_name" "soundings_sedimentation" 
+      "wms_title" "Soundings Sedimentation 2017-2018" 
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+      "wms_extent" "1640000 -126200 1836400 1522600"
+      "ows_enable_request" "*" 
+      "ows_include_items" "all" 
+    END
+    PROJECTION
+        "init=epsg:3979" 
+    END  
+    include "./wis-sedimentation.map" 
+END
+
+
+LAYER
+    NAME "depth_measurements"
+    SCALETOKEN
+      NAME "%resolution%" 
+      VALUES
+        "0" "25cm" 
+        "1000" "50cm" 
+        "2500" "1m" 
+        "15000" "2m" 
+        "25000" "4m"
+        "75000" "8m"
+        "100000" "16m"
+      END
+    END
+    TYPE POINT
+    CONNECTION "host=localhost dbname=enav user=pgrastertime password=pgrastertime port=5432"
+    CONNECTIONTYPE POSTGIS
+    PROCESSING 'CLOSE_CONNECTION=DEFER'
+    DATA "geom from (select * from soundings_depth_points) as foo using unique id using srid=3979"
+    TEMPLATE "blank.html"
+    TOLERANCE 2
+    TOLERANCEUNITS PIXELS
+    METADATA
+      "wms_name" "depth_measurements"
+      "wms_title" "Depth Measurements (Soundings)"
+      "wms_srs" "EPSG:3979 EPSG:2950 EPSG:2949 EPSG:3857"
+## Need to cover Canada coast to coast
+      "wms_extent" "-2650000 320000 2600000 1950000" 
+      "ows_enable_request" "*"
+      "gml_include_items" "all"
+      "ows_include_items" "all"
+      "wms_include_items" "all"
+    END
+    PROJECTION
+        "init=epsg:3979"
+    END
+    MAXSCALEDENOM 100000
+    CLASS
+    NAME "Sounding"
+        LABEL
+            TEXT (round([val]+(-0.5),1))
+            TYPE TRUETYPE
+            FONT sc
+            COLOR 0 0 0
+           # COLOR 136 152 139
+            SIZE 9
+            ANTIALIAS TRUE
+           # force true
+            POSITION CC
+            PARTIALS FALSE
+           # MINDISTANCE 10
+            BUFFER 25
+        END
+        LABEL
+            EXPRESSION ([val] <= -9)
+            TEXT ( [val] * -10 % 10)
+            OFFSET 12 7
+            TYPE TRUETYPE
+            FONT sc
+            COLOR 0 0 0
+           # COLOR 136 152 139  125 137 140
+            SIZE 7
+            SIZE 7
+            ANTIALIAS TRUE
+            force true
+            POSITION CC
+            PARTIALS FALSE
+            BUFFER 25
+        END
+        LABEL
+            EXPRESSION ([val] > -9)
+            TEXT ( [val] * -10 % 10)
+            OFFSET 8 7
+            TYPE TRUETYPE
+            FONT sc
+            COLOR 0 0 0
+           # COLOR 136 152 139
+            SIZE 7
+            ANTIALIAS TRUE
+            force true
+            POSITION CC
+            PARTIALS FALSE
+            BUFFER 25
+        END
+    END
+END
+# This layer should be footprint of all raster in database
+# LAYER
+#      NAME 'soundings_surface'
+#      CONNECTION "host=localhost dbname=enav user=pgrastertime password=pgrastertime port=5432"
+#      CONNECTIONTYPE POSTGIS
+#      PROCESSING 'CLOSE_CONNECTION=DEFER'
+#      PROJECTION
+#              "init=epsg:3979"
+#      END
+#      TEMPLATE "blank.html"
+#      METADATA
+#           "wms_name" "soundings_surface"
+#           "wms_title" "Soundings surface and metadata (4m)"
+#           # "wms_enable_request" "* !GetCapabilities"
+#           "gml_include_items" "all"
+#           "wms_include_items" "all"
+#           "ows_include_items" "all"
+#      END
+#      TYPE POLYGON
+#      DATA "rast_geom from ( select * from sounding_surface ) as foo using unique id using srid=3979"
+#      CLASS
+#        STYLE
+#           OUTLINECOLOR '#FF6347'
+#           WIDTH 1
+#        END
+#      END
+#   END
+
+
+ LAYER
+     NAME 'design_grade'
+     CONNECTION "host=localhost dbname=enav user=pgrastertime password=pgrastertime port=5432"
+     CONNECTIONTYPE POSTGIS
+     PROCESSING 'CLOSE_CONNECTION=DEFER'
+     PROJECTION
+ 	     "init=epsg:3979"
+     END
+     TEMPLATE "blank.html"
+     TOLERANCE 1
+     TOLERANCEUNITS pixels
+     METADATA
+          "wms_name" "design_grade"
+          "wms_title" "Design grade"
+          "wms_enable_request" "*" 
+          "ows_include_items" "all"
+     END            
+     TYPE POLYGON
+     DATA "geom_3979 from (select * from wis.design_grade_s) as foo using unique id using srid=3979"
+     CLASS
+       STYLE 
+          OUTLINECOLOR '#4B0082'
+          WIDTH 1     
+       END
+     END
+  END
+   
+  LAYER
+     NAME 'locator_helper'
+	 DEBUG 5
+     PROJECTION
+ 	     "init=epsg:4326"
+     END
+     TEMPLATE "blank.html"
+     METADATA
+          "wms_name" "locator_helper"
+          "wms_title" "Locator helper"
+          # "wms_enable_request" "* !GetCapabilities" 
+          "gml_include_items" "all"
+          "wms_include_items" "all"
+          "ows_include_items" "all"
+     END            
+     TYPE POLYGON
+     DATA '../data/ne_10m_admin_1_states_provinces.shp'
+     CLASS 
+       STYLE 
+          OUTLINECOLOR '#CBCCCA'
+          WIDTH 1     
+       END
+     END
+  END
+
+END #MAP
